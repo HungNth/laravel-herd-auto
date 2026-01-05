@@ -1,0 +1,5 @@
+asyncio
+httpx
+sqlalchemy
+aiosqlite
+aiomysql
