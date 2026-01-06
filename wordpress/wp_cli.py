@@ -1,24 +1,21 @@
 from datetime import datetime
 from pathlib import Path
 from utils.user_input import clean_input
+import config
+from utils.os_helper import is_windows, wpcli_path, herd_path, is_mac
+from utils.commands import cmd
 
 
 class WPCLI:
     def __init__(self):
-        import config
-        import utils.os_helper as os_helper
-        from utils.commands import run_command
-        
-        self.run_command = run_command
+        self.run_command = cmd.run
         self.db_user = config.db_username
         self.db_password = config.db_password
-        self.db_host = config.db_host if os_helper.is_windows() else '127.0.0.1'
+        self.db_host = config.db_host if is_windows() else '127.0.0.1'
         self.db_port = config.db_port
-        self.admin_username = config.admin_username
-        self.admin_password = config.admin_password
-        self.admin_email = config.admin_email
-        self.wpcli = os_helper.wpcli_path()
-        self.herd_sites_path, _, _ = os_helper.herd_path()
+        self.db_socket = config.db_socket if is_mac() else ''
+        self.wpcli = wpcli_path()
+        self.herd_sites_path, _, _ = herd_path()
         self.wp_options = config.wp_options
     
     def wp_version(self, path):
@@ -32,12 +29,15 @@ class WPCLI:
         return result
     
     def wp_config_create(self, path, db_name, db_prefix='wp_'):
+        db_name = db_name.replace("-", "_").replace(" ", "_").lower()
+        
         command = (
             f'"{self.wpcli}" config create '
             f'--dbname="{db_name}" '
             f'--dbuser="{self.db_user}" '
             f'--dbpass="{self.db_password}" '
             f'--dbhost="{self.db_host}:{self.db_port}" '
+            f'{self.db_socket} '
             f'--dbprefix="{db_prefix}" '
             f'--path="{path}"'
         )
@@ -53,11 +53,6 @@ class WPCLI:
         return result
     
     def wp_install(self, site_name, admin_user, admin_password, admin_email):
-        admin_user = clean_input(admin_user) if clean_input(admin_user) != self.admin_username else self.admin_username
-        admin_password = clean_input(admin_password) if clean_input(
-            admin_password) != self.admin_password else self.admin_password
-        admin_email = clean_input(admin_email) if clean_input(admin_email) != self.admin_email else self.admin_email
-        
         path = self.herd_sites_path / clean_input(site_name)
         url = f"{clean_input(site_name)}.test"
         title = site_name
@@ -96,7 +91,7 @@ class WPCLI:
             )
             self.run_command(command, output=False)
     
-    def get_admin_id(self, path):
+    def get_user_id(self, path):
         command = (
             f'"{self.wpcli}" user list --field=ID '
             f'--path="{path}"'
@@ -137,13 +132,53 @@ class WPCLI:
             raise FileNotFoundError(f"The specified database file does not exist or is not a .sql file: {db_path}")
         
         command = (
-            f'"{self.wpcli}" db export" '
+            f'"{self.wpcli}" db import" '
             f'"{db_path}" '
             f'--path="{path}"'
         )
         self.run_command(command)
+    
+    def update_user_email(self, path, new_email):
+        user_id = self.get_user_id(path)
+        command = (
+            f'"{self.wpcli}" user update {user_id} '
+            f'--user_email="{new_email}" '
+            f'--path="{path}"'
+        )
+        self.run_command(command)
+    
+    def update_admin_email(self, path, new_email):
+        command = (
+            f'"{self.wpcli}" option update admin_email {new_email} '
+            f'--path="{path}"'
+        )
+        self.run_command(command)
+    
+    def update_site_url(self, path):
+        site_url = f"http://{Path(path).name}.test"
+        
+        command1 = (
+            f'"{self.wpcli}" option update siteurl "{site_url}" '
+            f'--path="{path}"'
+        )
+        self.run_command(command1)
+        
+        command2 = (
+            f'"{self.wpcli}" option update home "{site_url}" '
+            f'--path="{path}"'
+        )
+        self.run_command(command2)
+    
+    def update_user_password(self, path, new_password):
+        user_id = self.get_user_id(path)
+        
+        command = (
+            f'"{self.wpcli}" user update {user_id} '
+            f'--user_pass="{new_password}" '
+            f'--path="{path}"'
+        )
+        
+        self.run_command(command)
 
 
-if __name__ == '__main__':
-    wpcli = WPCLI()
-    wpcli.export_db(r"F:\laravel-herd\sites\astro-estates")
+wpcli = WPCLI()
