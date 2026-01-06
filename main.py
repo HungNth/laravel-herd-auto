@@ -1,9 +1,11 @@
-from utils.user_input import get_input
+import asyncio
+
 
 async def main():
-    website_name = get_input("Enter website name (no space): ", required=True)
-    
-    
+    from container import wp
+    latest_version = wp.wp_latest_version()
+    print(f"Latest WordPress version: {latest_version}")
+
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())
