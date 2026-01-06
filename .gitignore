@@ -7,3 +7,4 @@ dist
 .herdenv
 .venv
 config.py
+__pycache__
