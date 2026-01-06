@@ -41,3 +41,11 @@ def get_admin_credentials():
         admin_email_input = admin_email
     
     return site_name, admin_name_input, admin_pass_input, admin_email_input
+
+
+def get_confirmation():
+    while True:
+        confirmation = get_input("Are you sure you want to proceed? (y/n): ", required=True)
+        if confirmation in ['y', 'n']:
+            return confirmation == 'y'
+        print("Invalid input. Please enter 'y' or 'n'.")
