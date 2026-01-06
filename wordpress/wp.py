@@ -1,6 +1,7 @@
 import shutil
 
 from utils.os_helper import herd_path
+from utils.user_input import get_admin_credentials, get_confirmation
 
 
 class WordPress:
@@ -8,7 +9,6 @@ class WordPress:
         self.herd_sites_path, _, _ = herd_path()
     
     def create_website(self):
-        from utils.user_input import get_admin_credentials
         
         from wordpress.wp_cli import wpcli
         site_name, admin_name_input, admin_pass_input, admin_email_input = get_admin_credentials()
@@ -16,6 +16,14 @@ class WordPress:
     
     def delete_websites(self):
         selected_sites = self.choose_website()
+        if not selected_sites:
+            return
+        
+        print(f'You have selected the following websites for deletion: {", ".join(selected_sites)}')
+        if not get_confirmation():
+            print("Deletion cancelled by user.")
+            return
+        
         for site in selected_sites:
             self.delete_website(site)
     
