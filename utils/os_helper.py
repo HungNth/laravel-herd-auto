@@ -1,5 +1,6 @@
 import platform
 from pathlib import Path
+from utils.commands import run_command
 
 _OS_NAME = None
 
@@ -48,8 +49,39 @@ def herd_path():
 
 def wpcli_path():
     _, _, herd_bin_path = herd_path()
-    return herd_bin_path / "wp"
+    wpcli = Path(herd_bin_path / "wp")
+    
+    result = run_command(f"{wpcli} --version")
+    
+    if "WP-CLI" not in result:
+        print("WP-CLI is not installed or not found in the expected path.")
+        print("Installing WP-CLI...")
+        install_wp_cli()
+        return wpcli
+    else:
+        print("WP-CLI is installed on your computer.")
+        return wpcli
 
-# if __name__ == '__main__':
-#     print(herd_path())
-#     print(wpcli_path())
+
+def install_wp_cli():
+    _, _, herd_bin_path = herd_path()
+    
+    if is_windows():
+        command = (
+            f'cd /d "{herd_bin_path}" && '
+            f'curl -L -O "https://raw.github.com/wp-cli/builds/gh-pages/phar/wp-cli.phar" && '
+            f'echo @ECHO OFF > wp.bat && echo php "%~dp0wp-cli.phar" %* >> wp.bat'
+        )
+        run_command(command)
+        print("WP-CLI is installed on your computer.")
+    elif is_mac():
+        command = (
+            f'curl -O "https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar" && '
+            f'chmod +x wp-cli.phar && '
+            fr'mv wp-cli.phar ~/Library/Application\ Support/Herd/bin/wp'
+        )
+        run_command(command)
+
+
+if __name__ == '__main__':
+    wpcli_path()
