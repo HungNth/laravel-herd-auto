@@ -44,3 +44,10 @@ def herd_path():
         return herd_sites_path, herd_cached_path, herd_bin_path
     else:
         return None
+
+# if __name__ == '__main__':
+#     herd_sites_path, herd_cached_path, herd_bin_path = herd_path()
+#
+#     print(herd_sites_path)
+#     print(herd_cached_path)
+#     print(herd_bin_path)
