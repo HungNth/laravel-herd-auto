@@ -16,7 +16,7 @@ class MySQL:
         return db_name.replace('-', '_').replace(' ', '_').lower()
     
     def run(self, command, output=True, print_output=True):
-        mysql_command = f'mysql -u {self.db_user} -P {self.db_port} {command}'
+        mysql_command = f'mysql -u {self.db_user} -P {self.db_port} {self.db_socket} {command}'
         
         result = subprocess.run(mysql_command, shell=True, capture_output=True, text=True)
         
