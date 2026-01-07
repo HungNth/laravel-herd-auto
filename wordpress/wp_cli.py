@@ -179,6 +179,26 @@ class WPCLI:
         )
         
         self.run_command(command)
+    
+    def install_plugin(self, slug, path, activate=True):
+        command = (
+            f'"{self.wpcli}" plugin install {slug} '
+            f'--path="{path}" '
+            f'{"--activate" if activate else ""}'
+        )
+        self.run_command(command)
+    
+    def install_plugins(self, plugins, path, activate=True):
+        for plugin in plugins:
+            self.install_plugin(plugin, path, activate)
+    
+    def install_theme(self, slug, path, activate=True):
+        command = (
+            f'"{self.wpcli}" theme install {slug} '
+            f'--path="{path}" '
+            f'{"--activate" if activate else ""}'
+        )
+        self.run_command(command)
 
 
 wpcli = WPCLI()
