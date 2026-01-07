@@ -9,7 +9,7 @@ mac_herd_bin_path = r""
 
 admin_username = "admin"
 admin_password = "admin"
-admin_email = "thienhungdev@gmail.com"
+admin_email = "admin@gmail.com"
 
 db_host = "localhost"
 db_port = 3306
@@ -17,8 +17,102 @@ db_username = "root"
 db_password = ""
 db_socket = ""
 
-theme_api = "themes.json"
-plugin_api = "plugins.json"
+default_theme_slug = "flatsome"
+
+themes = [
+    {
+        "name": "Flatsome",
+        "slug": "flatsome",
+    },
+    {
+        "name": "Jannah",
+        "slug": "jannah",
+    },
+    {
+        "name": "Avada",
+        "slug": "Avada",
+    },
+    {
+        "name": "Woodmart",
+        "slug": "flatsome",
+    },
+    {
+        "name": "Bricks",
+        "slug": "bricks",
+    }
+]
+
+plugins = [
+    {
+        "name": "Advanced Custom Fields PRO",
+        "slug": "advanced-custom-fields-pro"
+    },
+    {
+        "name": "All-in-One WP Migration Unlimited Extension",
+        "slug": "all-in-one-wp-migration-unlimited-extension"
+    },
+    {
+        "name": "Rank Math SEO PRO",
+        "slug": "seo-by-rank-math-pro"
+    },
+    {
+        "name": "UpdraftPlus - Backup/Restore",
+        "slug": "updraftplus"
+    },
+    {
+        "name": "WP Mail SMTP Pro",
+        "slug": "wp-all-import-pro"
+    },
+    {
+        "name": "Admin and Site Enhancements (ASE) Pro",
+        "slug": "admin-site-enhancements-pro"
+    },
+    {
+        "name": "WP Rocket",
+        "slug": "wp-rocket"
+    },
+    {
+        "name": "Duplicator Pro",
+        "slug": "duplicator-pro"
+    },
+    {
+        "name": "Elementor Pro",
+        "slug": "elementor-pro"
+    },
+    {
+        "name": "FluentCart Pro",
+        "slug": "fluent-cart-pro"
+    },
+    {
+        "name": "Blocksy Companion (Premium)",
+        "slug": "blocksy-companion-pro"
+    },
+    {
+        "name": "Etch",
+        "slug": "etch"
+    },
+    {
+        "name": "Automatic.css",
+        "slug": "automaticcss-plugin"
+    },
+    {
+        "name": "GP Premium",
+        "slug": "gp-premium"
+    },
+    {
+        "name": "GenerateBlocks Pro",
+        "slug": "generateblocks-pro"
+    },
+    {
+        "name": "Tocer",
+        "slug": "tocer"
+    },
+    {
+        "name": "Perfmatters",
+        "slug": "perfmatters"
+    }
+
+]
 
 bulk_restore_path = "bulk_restore.csv"
 
