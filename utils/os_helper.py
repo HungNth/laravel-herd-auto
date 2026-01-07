@@ -1,6 +1,5 @@
 import platform
 from pathlib import Path
-from utils.commands import cmd
 
 _OS_NAME = None
 
@@ -45,39 +44,3 @@ def herd_path():
         return herd_sites_path, herd_cached_path, herd_bin_path
     else:
         return None
-
-
-herd_sites_path, herd_cached_path, herd_bin_path = herd_path()
-
-
-def wpcli_path():
-    wpcli = Path(herd_bin_path / "wp")
-    
-    result = cmd.run(f"{wpcli} --version", print_output=False)
-    
-    if "WP-CLI" not in result:
-        print("WP-CLI is not installed or not found in the expected path.")
-        print("Installing WP-CLI...")
-        install_wp_cli()
-        return wpcli
-    else:
-        return wpcli
-
-
-def install_wp_cli():
-    if is_windows():
-        command = (
-            f'cd /d "{herd_bin_path}" && '
-            f'curl -L -O "https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar" && '
-            f'echo @ECHO OFF > wp.bat && echo php "%~dp0wp-cli.phar" %* >> wp.bat'
-        )
-        cmd.run(command)
-        print("WP-CLI installed successfully on Windows.")
-    elif is_mac():
-        command = (
-            f'curl -O "https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar" && '
-            f'chmod +x wp-cli.phar && '
-            fr'mv wp-cli.phar ~/Library/Application\ Support/Herd/bin/wp'
-        )
-        cmd.run(command)
-        print("WP-CLI installed successfully on MacOs.")
