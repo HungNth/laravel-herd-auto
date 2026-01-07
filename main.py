@@ -36,10 +36,7 @@ def main():
     
     if args.delete:
         wp.delete_websites()
-    
-    # return cmd, wp_cli, wp_api, mysql, wp
 
 
 if __name__ == "__main__":
-    # cmd, wp_cli, wp_api, mysql, wp = main()
     main()
