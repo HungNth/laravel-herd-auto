@@ -77,7 +77,7 @@ class MySQL:
             return prefix
         return None
     
-    def get_user_id(self, db_name):
+    def get_admin_id(self, db_name):
         db_name = self.clean_db_name(db_name)
         
         if not self.check_database_exists(db_name):
@@ -93,8 +93,6 @@ class MySQL:
             f'-e "USE {db_name}; SELECT ID FROM {prefix}users;"',
             print_output=False)
         
-        print(result)
-        
         if result:
             user_id = result.splitlines()[1]
             return user_id
@@ -107,7 +105,7 @@ class MySQL:
             print(f'Database "{db_name}" does not exist.')
             return
         
-        user_id = self.get_user_id(db_name)
+        user_id = self.get_admin_id(db_name)
         if not user_id:
             print(f'User not found in database "{db_name}".')
             return
@@ -120,7 +118,7 @@ class MySQL:
         try:
             self.run(
                 f'-e "USE {db_name}; UPDATE {prefix}users SET user_login = \'{new_username}\' WHERE ID = {user_id};"')
-            print(f'Changed username to "{new_username}" in database "{db_name}".\n')
+            print(f'Changed username to "{new_username}" in database "{db_name}".')
         except Exception as e:
             print(f'Error changing username in database "{db_name}": {e}')
             return
@@ -132,7 +130,7 @@ class MySQL:
             print(f'Database "{db_name}" does not exist.')
             return
         
-        user_id = self.get_user_id(db_name)
+        user_id = self.get_admin_id(db_name)
         if not user_id:
             print(f'User not found in database "{db_name}".')
             return
@@ -145,7 +143,7 @@ class MySQL:
         try:
             self.run(
                 f'-e "USE {db_name}; UPDATE {prefix}users SET user_pass = MD5(\'{new_password}\') WHERE ID = {user_id};"')
-            print(f'Changed password in database "{db_name}".\n')
+            print(f'Changed password in database "{db_name}".')
         except Exception as e:
             print(f'Error changing password in database "{db_name}": {e}')
             return
@@ -157,7 +155,7 @@ class MySQL:
             print(f'Database "{db_name}" does not exist.')
             return
         
-        user_id = self.get_user_id(db_name)
+        user_id = self.get_admin_id(db_name)
         if not user_id:
             print(f'User not found in database "{db_name}".')
             return
@@ -170,10 +168,7 @@ class MySQL:
         try:
             self.run(
                 f'-e "USE {db_name}; UPDATE {prefix}users SET user_email = \'{new_email}\' WHERE ID = {user_id};"')
-            print(f'Changed user email to "{new_email}" in database "{db_name}".\n')
+            print(f'Changed user email to "{new_email}" in database "{db_name}".')
         except Exception as e:
             print(f'Error changing email in database "{db_name}": {e}')
             return
-
-
-mysql = MySQL()
