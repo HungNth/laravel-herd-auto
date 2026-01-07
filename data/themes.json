@@ -1,12 +1,10 @@
 [
   {
     "name": "Flatsome",
-    "slug": "flatsome",
-    "api": ""
+    "slug": "flatsome"
   },
   {
     "name": "Avada",
-    "slug": "Avada",
-    "api": ""
+    "slug": "Avada"
   }
 ]
