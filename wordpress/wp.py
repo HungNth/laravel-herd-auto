@@ -6,10 +6,11 @@ from utils.os_helper import herd_path
 from utils.user_input import get_input, clean_input, get_confirmation
 from utils.herd import add_ssl, is_herd_open
 
+herd_sites_path, _, _ = herd_path()
+
 
 class WordPress:
     def __init__(self, wpc_li, wp_api, mysql):
-        self.herd_sites_path, _, _ = herd_path()
         self.wp_cli = wpc_li
         self.wp_api = wp_api
         self.mysql = mysql
@@ -75,7 +76,7 @@ class WordPress:
         site_name, admin_username, admin_password, admin_email = self.get_admin_credentials()
         selected_themes, selected_plugins, is_setup_wp_config = self.get_setup_options()
         
-        site_path = self.herd_sites_path / site_name
+        site_path = herd_sites_path / site_name
         
         self.wp_cli.wp_install(site_name, admin_username, admin_password, admin_email)
         if len(selected_themes) == 0:
@@ -104,7 +105,7 @@ class WordPress:
             self.delete_website(site)
     
     def delete_website(self, site_name):
-        site_path = self.herd_sites_path / site_name
+        site_path = herd_sites_path / site_name
         
         if site_path.exists():
             try:
@@ -116,12 +117,12 @@ class WordPress:
                 return
     
     def is_website_exists(self, site_name):
-        site_path = self.herd_sites_path / site_name
+        site_path = herd_sites_path / site_name
         return site_path.exists()
     
     def get_site_list(self):
         site_list = []
-        for site in self.herd_sites_path.iterdir():
+        for site in herd_sites_path.iterdir():
             if site.is_dir():
                 site_list.append(site.name)
         return site_list
@@ -185,7 +186,7 @@ class WordPress:
     
     def reset_admin_info(self, selected_website):
         for site in selected_website:
-            path = self.herd_sites_path / site
+            path = herd_sites_path / site
             print(f'Resetting admin information for site: "{site}"')
             self.mysql.change_username(site, config.admin_username)
             self.mysql.change_password(site, config.admin_password)
@@ -194,7 +195,7 @@ class WordPress:
     
     def setup_wp_options(self, selected_website):
         for site in selected_website:
-            path = self.herd_sites_path / site
+            path = herd_sites_path / site
             print(f'Setting up WordPress options for site: "{site}"')
             self.wp_cli.wp_options_set(path)
     
