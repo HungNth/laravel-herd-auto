@@ -33,7 +33,7 @@ class WPCLI:
             print("Installing WP-CLI...")
             self.install_wp_cli()
         
-        return herd_bin_path / "wp"
+        return herd_bin_path / 'wp'
     
     def install_wp_cli(self):
         if is_windows():
@@ -72,7 +72,6 @@ class WPCLI:
             f'--dbuser="{self.db_user}" '
             f'--dbpass="{self.db_password}" '
             f'--dbhost="{self.db_host}:{self.db_port}" '
-            f'{self.db_socket if self.db_socket else ""} '
             f'--dbprefix="{db_prefix}" '
             f'--path="{path}"'
         )
@@ -128,8 +127,15 @@ class WPCLI:
                 f'"{self.wpcli}" {option} '
                 f'--path="{path}"'
             )
-            
+            # value = option.split()
+            #
+            # command = [
+            #               f'{self.wpcli}',
+            #               f'--path={path}'
+            #           ] + value
             run_command(command)
+        
+        subprocess.run(f'wp rewrite structure /%category%/%postname%/', cwd=path, shell=True)
     
     def get_user_id(self, path):
         command = (
