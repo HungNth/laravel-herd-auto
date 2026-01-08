@@ -69,7 +69,6 @@ class WPCLI:
         #     f'--path={path}',
         #     '--skip-content' if skip_content else None
         # ]
-        print(command)
         
         result = run_command(command)
         return result
@@ -83,7 +82,7 @@ class WPCLI:
             f'--dbuser="{self.db_user}" '
             f'--dbpass="{self.db_password}" '
             f'--dbhost="{self.db_host}:{self.db_port}" '
-            f'{self.db_socket} '
+            f'{self.db_socket if self.db_socket else ""} '
             f'--dbprefix="{db_prefix}" '
             f'--path="{path}"'
         )
@@ -101,7 +100,6 @@ class WPCLI:
         #     f'--path={path}',
         # ]
         
-        print(command)
         result = run_command(command)
         return result
     
@@ -113,7 +111,6 @@ class WPCLI:
         
         # command = [self.wpcli, 'db', 'create', f'--path={path}']
         
-        print(command)
         result = run_command(command)
         return result
     
@@ -149,7 +146,6 @@ class WPCLI:
         #     f'--path={path}'
         # ]
         
-        print(command)
         result = run_command(command)
         return result
     
@@ -185,7 +181,6 @@ class WPCLI:
             #     f'--path={path}'
             # ]
             
-            print(command)
             run_command(command)
     
     def get_user_id(self, path):
@@ -269,7 +264,7 @@ class WPCLI:
             raise FileNotFoundError(f"The specified database file does not exist or is not a .sql file: {db_path}")
         
         command = (
-            f'"{self.wpcli}" db import" '
+            f'"{self.wpcli}" db import '
             f'"{db_path}" '
             f'--path="{path}"'
         )
@@ -423,12 +418,12 @@ class WPCLI:
         #     f'--path={path}',
         #     '--activate' if activate else None
         # ]
-        print(command)
+        
         run_command(command)
     
     def install_themes(self, themes, path):
         for theme in themes:
-            self.install_theme(theme, path, )
+            self.install_theme(theme, path)
 
 # if __name__ == '__main__':
 #     wpcli = WPCLI()
