@@ -2,8 +2,9 @@ import subprocess
 
 
 def add_ssl(path):
-    command = f'cd /d "{path}" && herd secure'
-    subprocess.run(command, shell=True, stdout=subprocess.PIPE, text=True, stderr=subprocess.DEVNULL)
+    print('Adding SSL for Herd...')
+    command = 'herd secure'
+    subprocess.run(command, cwd=path, shell=True, stdout=subprocess.PIPE, text=True, stderr=subprocess.DEVNULL)
     print('SSL certificate added successfully.')
 
 
