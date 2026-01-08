@@ -4,6 +4,9 @@ from typing import Literal
 def get_input(prompt, default=None, required=False):
     while True:
         user_input = input(prompt)
+        if user_input == 'exit':
+            print("Exiting the program.")
+            exit(0)
         if not user_input and default is not None:
             return default
         if required and not user_input:
@@ -26,6 +29,10 @@ def get_confirmation(prompt, default: Literal[True, False] = None):
     
     while True:
         choice = input(prompt).strip().lower()
+        
+        if choice == 'exit':
+            print("Exiting the program.")
+            exit(0)
         
         if choice == '' and default is not None:
             return default
