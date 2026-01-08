@@ -11,8 +11,7 @@ def is_herd_open():
     try:
         result = subprocess.run('herd help', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         text = 'The Herd Desktop application is not running. Please start Herd and try again.'
-        if text in result.stdout.strip():
-            print(text)
+        if text in result.stdout:
             return False
         return True
     except FileNotFoundError:
@@ -20,5 +19,5 @@ def is_herd_open():
         return False
 
 # if __name__ == '__main__':
-#     connection = check_herd_opened()
+#     connection = is_herd_open()
 #     print(connection)
