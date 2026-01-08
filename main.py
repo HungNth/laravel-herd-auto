@@ -53,7 +53,7 @@ def main():
     if args.delete:
         wp.delete_websites()
     
-    if args.delete:
+    if args.backup:
         wp.backup_options()
     
     if args.restore:
