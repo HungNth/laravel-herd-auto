@@ -1,3 +1,4 @@
+import subprocess
 from datetime import datetime
 from pathlib import Path
 
@@ -256,11 +257,27 @@ class WPCLI:
         )
         run_command(command)
     
-    def install_plugins(self, plugins, path, activate=False):
+    def install_plugins(self, plugins, path, activate=True):
         for plugin in plugins:
-            self.install_plugin(plugin, path, activate)
-        
-        self.activate_all_plugins(path)
+            self.install_plugin(plugin, path, activate=activate)
+    
+    def activate_plugin(self, slug, path):
+        command = (
+            f'"{self.wpcli}" plugin activate "{slug}" '
+            f'--path="{path}"'
+        )
+        run_command(command)
+    
+    def is_plugin_installed(self, slug, path):
+        command = (
+            f'"{self.wpcli}" plugin is-installed "{slug}" '
+            f'--path="{path}"'
+        )
+        try:
+            run_command(command, print_output=False)
+            return True
+        except RuntimeError:
+            return False
     
     def activate_all_plugins(self, path):
         command = (
@@ -269,11 +286,17 @@ class WPCLI:
         )
         run_command(command)
     
-    def deactivate_all_plugins(self, path):
+    def deactivate_all_plugins(self, path, exclude=None):
+        if exclude is None:
+            exclude = []
+        exclude_args = f'--exclude={",".join(exclude)}'
+        
         command = (
             f'"{self.wpcli}" plugin deactivate --all '
+            f'{exclude_args} '
             f'--path="{path}"'
         )
+        # print(command)
         run_command(command)
     
     def install_theme(self, slug, path, activate=True):
@@ -287,8 +310,16 @@ class WPCLI:
     def install_themes(self, themes, path):
         for theme in themes:
             self.install_theme(theme, path)
+    
+    def ai1_backup(self, path):
+        command = (
+            f'"{self.wpcli}" ai1wm backup '
+            f'--path="{path}"'
+        )
+        result = run_command(command)
+        return result
 
 # if __name__ == '__main__':
 #     wpcli = WPCLI()
-#     wpcli_path = wpcli.wpcli_path()
-#     print(wpcli_path)
+#     result = wpcli.is_wp_plugin_installed('contact-form-7', r'F:\laravel-herd\sites\astro-estates')
+#     print(result)
