@@ -72,7 +72,6 @@ class MySQL:
         
         if not self.check_database_exists(db_name):
             print(f'Database "{db_name}" does not exist.')
-            return
         else:
             self.run(f'-e "DROP DATABASE {db_name};"')
     
