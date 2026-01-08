@@ -44,3 +44,26 @@ def get_confirmation(prompt, default: Literal[True, False] = None):
             return False
         
         print("Invalid input. Please enter 'y' or 'n'.")
+
+
+def get_input_options(options):
+    exit_option = 'Exit'
+    
+    options.append(exit_option)
+    for index, option in enumerate(options):
+        print(f'{index + 1}. {option}')
+    
+    valid_choices = [str(i + 1) for i in range(len(options))]
+    
+    while True:
+        choice = get_input(f'Your choice 1-{len(options)}: ', required=True)
+        
+        if choice not in valid_choices:
+            print("Invalid choice. Please select a valid option.")
+            continue
+        
+        if choice == str(len(options)):
+            print('Exiting the program.')
+            exit(0)
+        
+        return choice
