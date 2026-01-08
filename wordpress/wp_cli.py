@@ -215,6 +215,7 @@ class WPCLI:
         # ]
         
         result = run_command(command, print_output=False)
+        print(result)
         return result
     
     def get_db_prefix(self, path):
