@@ -14,19 +14,19 @@ def main():
     wp = WordPress(wp_cli, wp_api, mysql)
     
     parser = argparse.ArgumentParser(
-        description="WordPress CLI Tool"
+        description='WordPress CLI Tool'
     )
     
     parser.add_argument(
-        "-a", "--add",
-        action="store_true",
-        help="Add item"
+        '-a', '--add',
+        action='store_true',
+        help='Add item'
     )
     
     parser.add_argument(
-        "-d", "--delete",
-        action="store_true",
-        help="Delete item"
+        '-d', '--delete',
+        action='store_true',
+        help='Delete item'
     )
     
     args = parser.parse_args()
