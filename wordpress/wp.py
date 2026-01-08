@@ -1,4 +1,5 @@
 import shutil
+from pathlib import Path
 from typing import Literal
 
 import config
@@ -75,7 +76,7 @@ class WordPress:
         add_ssl(site_path)
     
     def delete_websites(self):
-        selected_sites = self.select_website()
+        selected_sites = self.select_websites()
         if not selected_sites:
             exit(0)
         
@@ -141,7 +142,7 @@ class WordPress:
                 continue
             print(f"{index}. {site}")
     
-    def select_website(self):
+    def select_websites(self):
         from utils.user_input import clean_selection
         
         site_list = self.get_site_list()
@@ -219,7 +220,7 @@ class WordPress:
             print("Invalid choice. Please select a valid option.")
             return self.configure_wp()
         
-        selected_website = self.select_website()
+        selected_website = self.select_websites()
         
         if choice == '1':
             self.reset_admin_info(selected_website)
@@ -240,18 +241,20 @@ class WordPress:
         if choice == '1':
             self.backup_full_source()
         elif choice == '2':
-            self.backup_by_wpress()
+            self.backup_by_ai1_plugin()
     
     def backup_full_source(self):
-        print("Backing up full source code...")
-        selected_websites = self.select_website()
+        selected_websites = self.select_websites()
         
         for site in selected_websites:
             site_path = herd_sites_path / site
             backup_path = herd_sites_path / f'{site}_full_backup_{formatted_time()}.zip'
             
+            print(f'Deleting all transients...')
             self.wp_cli.delete_all_transients(site_path)
+            print(f'Clearing cache...')
             self.wp_cli.cache_clear(site_path)
+            print(f'Exporting database...')
             self.wp_cli.export_db(site_path)
             
             command = [
@@ -267,11 +270,54 @@ class WordPress:
             
             command += ['-C', str(herd_sites_path), site]
             
+            print(f'Creating backup for site "{site}"...')
             run_command(command, shell=False)
             print(f'Backup for site "{site}" created at "{backup_path}"')
     
-    def backup_by_wpress(self):
-        print("Backing up with All-in-One WP Migration plugin")
+    def backup_by_ai1_plugin(self):
+        selected_websites = self.select_websites()
+        
+        for site in selected_websites:
+            site_path = herd_sites_path / site
+            print(f'Deleting all transients...')
+            self.wp_cli.delete_all_transients(site_path)
+            print(f'Clearing cache...')
+            self.wp_cli.cache_clear(site_path)
+            
+            print('Deactivating all plugins...')
+            self.wp_cli.deactivate_all_plugins(site_path)
+            required_plugin = 'all-in-one-wp-migration-unlimited-extension'
+            ai1wmu = self.wp_cli.is_plugin_installed(required_plugin, site_path)
+            if not ai1wmu:
+                print('All-in-One WP Migration Unlimited Extension plugin is not installed.')
+                print('Installing All-in-One WP Migration Unlimited Extension plugin...')
+                plugin_url = self.wp_api.get_download_url(required_plugin)
+                self.wp_cli.install_plugins(['all-in-one-wp-migration', plugin_url], site_path)
+            self.wp_cli.activate_plugin(required_plugin, site_path)
+            
+            print(f'Backing up site "{site}" to ".wpress"...')
+            result = self.wp_cli.ai1_backup(site_path)
+            wpress_path = ''
+            wpress_parent_path = ''
+            if 'Backup location' in result:
+                wpress_path = result.split('Backup location: ')[1].strip()
+                wpress_parent_path = Path(wpress_path).parent
+            
+            backup_path = herd_sites_path / f'{site}_ai1m_backup_{formatted_time()}.zip'
+            command = [
+                'tar',
+                '-acf',
+                backup_path,
+                '-C',
+                wpress_parent_path,
+                Path(wpress_path).name
+            ]
+            
+            print(f'Creating backup for site "{site}"...')
+            run_command(command, shell=False)
+            print(f'Backup for site "{site}" created at "{backup_path}"')
+            
+            self.wp_cli.activate_all_plugins(site_path)
     
     def restore_options(self):
         options = [
