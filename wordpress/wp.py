@@ -1,4 +1,5 @@
 import shutil
+from pathlib import Path
 from typing import Literal
 
 import config
@@ -54,24 +55,6 @@ class WordPress:
         
         return site_name, admin_username_input, admin_pass_input, admin_email_input
     
-    def get_setup_options(self):
-        selected_themes = ""
-        selected_plugins = []
-        
-        is_install_theme = get_confirmation(
-            'Do you want to install another themes? (Default theme: "Flatsome") (y/N): ',
-            default=False)
-        if is_install_theme:
-            selected_themes = self.wp_api.select_packages("theme")
-        
-        is_install_plugins = get_confirmation('Do you want to install plugins? (y/N): ', default=False)
-        if is_install_plugins:
-            selected_plugins = self.wp_api.select_packages("plugin")
-        
-        is_setup_wp_config = get_confirmation('Do you want to setup WordPress options? (Y/n): ', default=True)
-        
-        return selected_themes, selected_plugins, is_setup_wp_config
-    
     def create_website(self):
         site_name, admin_username, admin_password, admin_email = self.get_admin_credentials()
         selected_themes, selected_plugins, is_setup_wp_config = self.get_setup_options()
@@ -93,13 +76,13 @@ class WordPress:
     def delete_websites(self):
         selected_sites = self.select_website()
         if not selected_sites:
-            return
+            exit(0)
         
         print(f'You have selected the following websites for deletion: {", ".join(selected_sites)}')
         if not get_confirmation("Are you sure you want to delete these websites? This action cannot be undone. (y/N): ",
                                 default=False):
             print("Deletion cancelled by user.")
-            return
+            exit(0)
         
         for site in selected_sites:
             self.delete_website(site)
@@ -109,12 +92,30 @@ class WordPress:
         
         if site_path.exists():
             try:
-                shutil.rmtree(site_path)
                 self.mysql.drop_database(site_name)
+                shutil.rmtree(site_path)
                 print(f'Website "{site_name}" and its database have been deleted successfully.\n')
             except Exception as e:
                 print(f'Error deleting website "{site_name}": {e}')
                 return
+    
+    def get_setup_options(self):
+        selected_themes = ""
+        selected_plugins = []
+        
+        is_install_theme = get_confirmation(
+            'Do you want to install another themes? (Default theme: "Flatsome") (y/N): ',
+            default=False)
+        if is_install_theme:
+            selected_themes = self.wp_api.select_packages("theme")
+        
+        is_install_plugins = get_confirmation('Do you want to install plugins? (y/N): ', default=False)
+        if is_install_plugins:
+            selected_plugins = self.wp_api.select_packages("plugin")
+        
+        is_setup_wp_config = get_confirmation('Do you want to setup WordPress options? (Y/n): ', default=True)
+        
+        return selected_themes, selected_plugins, is_setup_wp_config
     
     def is_website_exists(self, site_name):
         site_path = herd_sites_path / site_name
