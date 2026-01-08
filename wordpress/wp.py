@@ -1,11 +1,10 @@
 import shutil
-from pathlib import Path
 from typing import Literal
 
 import config
-from utils.os_helper import herd_path
-from utils.user_input import get_input, clean_input, get_confirmation
 from utils.herd import add_ssl, is_herd_open
+from utils.os_helper import herd_path
+from utils.user_input import get_input, clean_input, get_confirmation, get_input_options
 
 herd_sites_path, _, _ = herd_path()
 
@@ -210,7 +209,7 @@ class WordPress:
         print("Select an option to configure WordPress:")
         for option in options:
             print(option)
-        choice = get_input("Your choice (1-4): ", required=True)
+        choice = get_input('Your choice (1-4): ', required=True)
         if choice == '4':
             exit(0)
         
@@ -228,5 +227,52 @@ class WordPress:
             self.reset_admin_info(selected_website)
             self.setup_wp_options(selected_website)
         return None
-
-# wp = WordPress()
+    
+    def backup_options(self):
+        options = [
+            'Backup by full source code and database include',
+            'Backup by plugin All-in-One WP Migration (.wpress file)',
+        ]
+        
+        choice = get_input_options(options)
+        if choice == '1':
+            self.backup_full_source()
+        elif choice == '2':
+            self.backup_by_wpress()
+    
+    def backup_full_source(self):
+        print("Backing up full source code...")
+    
+    def backup_by_wpress(self):
+        print("Backing up with All-in-One WP Migration plugin")
+    
+    def restore_options(self):
+        options = [
+            'Restore by full source code and database include',
+            'Restore by wp-content only',
+            'Restore by plugin All-in-One WP Migration (.wpress file)',
+            'Restore by plugin Duplicator'
+        ]
+        
+        choice = get_input_options(options)
+        
+        if choice == '1':
+            self.restore_full_source()
+        elif choice == '2':
+            self.restore_by_wp_content()
+        elif choice == '3':
+            self.restore_by_wpress()
+        elif choice == '4':
+            self.restore_by_duplicator()
+    
+    def restore_full_source(self):
+        print("Restoring full source code...")
+    
+    def restore_by_wp_content(self):
+        print("Restoring wp-content only")
+    
+    def restore_by_wpress(self):
+        print("Restoring with All-in-One WP Migration plugin")
+    
+    def restore_by_duplicator(self):
+        print('Restoring with Duplicator plugin')
