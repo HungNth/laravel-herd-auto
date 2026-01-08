@@ -4,7 +4,7 @@ from typing import Literal
 
 import config
 from utils.commands import run_command
-from utils.herd import add_ssl, is_herd_open
+from utils.herd import add_ssl, is_herd_running
 from utils.os_helper import herd_path
 from utils.user_input import get_input, clean_input, get_confirmation, get_input_options
 from utils.time_helper import formatted_time
@@ -23,11 +23,7 @@ class WordPress:
         admin_password = config.admin_password
         admin_email = config.admin_email
         
-        if not self.mysql.check_db_connection():
-            print('Cannot connect to the database. Please check your database settings.')
-            exit(1)
-        
-        if not is_herd_open():
+        if not is_herd_running():
             print('The Herd Desktop application is not running. Please start Herd and try again.')
             exit(1)
         
