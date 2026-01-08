@@ -1,5 +1,4 @@
 import subprocess
-from typing import Union, List
 
 
 def run_command(command, capture=True, print_output=True, shell=True, pwsh=False):
