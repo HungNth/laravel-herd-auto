@@ -7,7 +7,7 @@ def add_ssl(path):
     print('SSL certificate added successfully.')
 
 
-def is_herd_open():
+def is_herd_running():
     try:
         result = subprocess.run('herd help', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         text = 'The Herd Desktop application is not running. Please start Herd and try again.'
