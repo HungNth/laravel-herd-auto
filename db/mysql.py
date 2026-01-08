@@ -12,21 +12,34 @@ class MySQL:
         self.db_port = config.db_port
         self.db_socket = config.db_socket if is_mac() else ''
     
+    def check_db_connection(self):
+        try:
+            self.run('-e "SELECT 1;"', print_output=False)
+            return True
+        except Exception as e:
+            print(f'Error connecting to database: {e}')
+            return False
+    
     def clean_db_name(self, db_name):
         return db_name.replace('-', '_').replace(' ', '_').lower()
     
-    def run(self, command, output=True, print_output=True):
-        mysql_command = f'mysql -u {self.db_user} -P {self.db_port} {self.db_socket} {command}'
+    def run(self, args, *, print_output=True, shell=True):
+        command = f'mysql -u {self.db_user} -P {self.db_port} {self.db_socket} {args}'
         
-        result = subprocess.run(mysql_command, shell=True, capture_output=True, text=True)
+        result = subprocess.run(
+            command,
+            shell=shell,
+            capture_output=True,
+            text=True
+        )
         
-        if result.stderr:
-            print(result.stderr)
-        if print_output:
-            print(result.stdout.strip())
-        if output:
-            return result.stdout.strip()
-        return None
+        if result.returncode != 0:
+            raise RuntimeError(result.stderr.strip())
+        
+        if print_output and result.stdout:
+            print(result.stdout)
+        
+        return result.stdout.strip()
     
     def check_database_exists(self, db_name):
         
@@ -172,3 +185,7 @@ class MySQL:
         except Exception as e:
             print(f'Error changing email in database "{db_name}": {e}')
             return
+
+# mysql = MySQL()
+# connection = mysql.check_database_exists('wp01')
+# print(connection)
