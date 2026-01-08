@@ -1,4 +1,5 @@
 import argparse
+import sys
 
 
 def main():
@@ -20,14 +21,29 @@ def main():
     parser.add_argument(
         '-a', '--add',
         action='store_true',
-        help='Add item'
+        help='Add a new website'
     )
     
     parser.add_argument(
         '-d', '--delete',
         action='store_true',
-        help='Delete item'
+        help='Delete website(s)'
     )
+    
+    parser.add_argument(
+        '-b', '--backup',
+        action='store_true',
+        help='Backup website options'
+    )
+    
+    parser.add_argument(
+        '-r', '--restore',
+        action='store_true',
+        help='Restore website options'
+    )
+    
+    if len(sys.argv) == 1:
+        wp.configure_wp()
     
     args = parser.parse_args()
     
@@ -36,6 +52,12 @@ def main():
     
     if args.delete:
         wp.delete_websites()
+    
+    if args.delete:
+        wp.backup_options()
+    
+    if args.restore:
+        wp.restore_options()
 
 
 if __name__ == "__main__":
