@@ -4,13 +4,7 @@ from typing import Union, List
 
 def run_command(command, capture=True, print_output=True, shell=True, pwsh=False):
     if pwsh:
-        shell = False
-        command = [
-            "pwsh",
-            "-NoProfile",
-            "-Command",
-            command
-        ]
+        command = f'pwsh -NoProfile -Command "{command}"'
     
     result = subprocess.run(
         command,
@@ -27,6 +21,7 @@ def run_command(command, capture=True, print_output=True, shell=True, pwsh=False
     
     return result.stdout.strip()
 
-# if __name__ == '__main__':
-#     cmd = 'ls'
-#     run_command(cmd, pwsh=True)
+
+if __name__ == '__main__':
+    cmd = 'ls'
+    run_command(cmd, pwsh=True)
