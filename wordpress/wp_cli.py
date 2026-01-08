@@ -54,22 +54,11 @@ class WPCLI:
     
     def get_wp_version(self, path):
         command = f'"{self.wpcli}" core version --path="{path}"'
-        
-        # command = [self.wpcli, 'core', 'version', f'--path={path}']
         result = run_command(command)
         return result
     
     def wp_core_download(self, path, skip_content=True):
         command = f'"{self.wpcli}" core download --path="{path}" {"--skip-content" if skip_content else ""}'
-        
-        # command = [
-        #     self.wpcli,
-        #     'core',
-        #     'download',
-        #     f'--path={path}',
-        #     '--skip-content' if skip_content else None
-        # ]
-        
         result = run_command(command)
         return result
     
@@ -87,19 +76,6 @@ class WPCLI:
             f'--path="{path}"'
         )
         
-        # command = [
-        #     self.wpcli,
-        #     'config',
-        #     'create',
-        #     f'--dbname={db_name}',
-        #     f'--dbuser={self.db_user}',
-        #     f'--dbpass={self.db_password}',
-        #     f'--dbhost={self.db_host}:{self.db_port}',
-        #     self.db_socket if self.db_socket else None,
-        #     f'--dbprefix={db_prefix}',
-        #     f'--path={path}',
-        # ]
-        
         result = run_command(command)
         return result
     
@@ -108,8 +84,6 @@ class WPCLI:
             f'"{self.wpcli}" db create '
             f'--path="{path}"'
         )
-        
-        # command = [self.wpcli, 'db', 'create', f'--path={path}']
         
         result = run_command(command)
         return result
@@ -134,18 +108,6 @@ class WPCLI:
             f'--path="{path}"'
         )
         
-        # command = [
-        #     self.wpcli,
-        #     'core',
-        #     'install',
-        #     f'--url={url}',
-        #     f'--title={title}',
-        #     f'--admin_user={admin_username}',
-        #     f'--admin_password={admin_password}',
-        #     f'--admin_email={admin_email}',
-        #     f'--path={path}'
-        # ]
-        
         result = run_command(command)
         return result
     
@@ -155,15 +117,6 @@ class WPCLI:
             f'"{key}" "{value}" '
             f'--path="{path}"'
         )
-        
-        # command = [
-        #     self.wpcli,
-        #     'config',
-        #     'set',
-        #     key,
-        #     value,
-        #     f'--path={path}'
-        # ]
         
         result = run_command(command)
         return result
@@ -175,12 +128,6 @@ class WPCLI:
                 f'--path="{path}"'
             )
             
-            # command = [
-            #     self.wpcli,
-            #     option,
-            #     f'--path={path}'
-            # ]
-            
             run_command(command)
     
     def get_user_id(self, path):
@@ -188,14 +135,6 @@ class WPCLI:
             f'"{self.wpcli}" user list --field=ID '
             f'--path="{path}"'
         )
-        
-        # command = [
-        #     self.wpcli,
-        #     'user',
-        #     'list',
-        #     '--field=ID',
-        #     f'--path={path}'
-        # ]
         
         result = run_command(command, print_output=False)
         return result[0]
@@ -206,14 +145,6 @@ class WPCLI:
             f'--path="{path}"'
         )
         
-        # command = [
-        #     self.wpcli,
-        #     'config',
-        #     'get',
-        #     'DB_NAME',
-        #     f'--path={path}'
-        # ]
-        
         result = run_command(command, print_output=False)
         print(result)
         return result
@@ -223,15 +154,7 @@ class WPCLI:
             f'"{self.wpcli}" db prefix '
             f'--path="{path}"'
         )
-        
-        # command = [
-        #     self.wpcli,
-        #     'db',
-        #     'prefix',
-        #     f'--path={path}'
-        # ]
         result = run_command(command, print_output=False)
-        
         return result
     
     def export_db(self, path, export_path=None):
@@ -250,14 +173,6 @@ class WPCLI:
             f'"{export_path}" '
             f'--path="{path}"'
         )
-        
-        # command = [
-        #     self.wpcli,
-        #     'db',
-        #     'export',
-        #     export_path,
-        #     f'--path={path}'
-        # ]
         run_command(command)
     
     def import_db(self, path, db_path):
@@ -269,14 +184,6 @@ class WPCLI:
             f'"{db_path}" '
             f'--path="{path}"'
         )
-        
-        # command = [
-        #     self.wpcli,
-        #     'db',
-        #     'import',
-        #     db_path,
-        #     f'--path={path}'
-        # ]
         run_command(command)
     
     def update_user_email(self, path, new_email):
@@ -287,15 +194,6 @@ class WPCLI:
             f'--user_email="{new_email}" '
             f'--path="{path}"'
         )
-        
-        # command = [
-        #     self.wpcli,
-        #     'user',
-        #     'update',
-        #     user_id,
-        #     f'--user_email={new_email}',
-        #     f'--path={path}'
-        # ]
         run_command(command)
     
     def update_admin_email(self, path, new_email):
@@ -303,15 +201,6 @@ class WPCLI:
             f'"{self.wpcli}" option update admin_email {new_email} '
             f'--path="{path}"'
         )
-        
-        # command = [
-        #     self.wpcli,
-        #     'option',
-        #     'update',
-        #     'admin_email',
-        #     new_email,
-        #     f'--path={path}'
-        # ]
         run_command(command)
     
     def update_site_url(self, path):
@@ -321,30 +210,12 @@ class WPCLI:
             f'"{self.wpcli}" option update siteurl "{site_url}" '
             f'--path="{path}"'
         )
-        
-        # command1 = [
-        #     self.wpcli,
-        #     'option',
-        #     'update',
-        #     'siteurl',
-        #     site_url,
-        #     f'--path={path}'
-        # ]
         run_command(command1)
         
         command2 = (
             f'"{self.wpcli}" option update home "{site_url}" '
             f'--path="{path}"'
         )
-        
-        # command2 = [
-        #     self.wpcli,
-        #     'option',
-        #     'update',
-        #     'home',
-        #     site_url,
-        #     f'--path={path}'
-        # ]
         run_command(command2)
     
     def update_user_password(self, path, new_password):
@@ -355,16 +226,27 @@ class WPCLI:
             f'--user_pass="{new_password}" '
             f'--path="{path}"'
         )
-        
-        # command = [
-        #     self.wpcli,
-        #     'user',
-        #     'update',
-        #     user_id,
-        #     f'--user_pass={new_password}',
-        #     f'--path={path}'
-        # ]
         run_command(command)
+    
+    def delete_all_transients(self, path):
+        command = (
+            f'"{self.wpcli}" transient delete --all '
+            f'--path="{path}"'
+        )
+        run_command(command, print_output=False)
+    
+    def cache_clear(self, path):
+        command1 = (
+            f'"{self.wpcli}" cache flush '
+            f'--path="{path}"'
+        )
+        run_command(command1, print_output=False)
+        
+        command2 = (
+            f'"{self.wpcli}" cli cache clear '
+            f'--path="{path}"'
+        )
+        run_command(command2, print_output=False)
     
     def install_plugin(self, slug, path, activate=True):
         command = (
@@ -372,15 +254,6 @@ class WPCLI:
             f'--path="{path}" '
             f'{"--activate" if activate else ""}'
         )
-        
-        # command = [
-        #     self.wpcli,
-        #     'plugin',
-        #     'install',
-        #     slug,
-        #     f'--path={path}',
-        #     '--activate' if activate else None
-        # ]
         run_command(command)
     
     def install_plugins(self, plugins, path, activate=False):
@@ -394,14 +267,13 @@ class WPCLI:
             f'"{self.wpcli}" plugin activate --all '
             f'--path="{path}"'
         )
-        
-        # command = [
-        #     self.wpcli,
-        #     'plugin',
-        #     'activate',
-        #     '--all',
-        #     f'--path={path}'
-        # ]
+        run_command(command)
+    
+    def deactivate_all_plugins(self, path):
+        command = (
+            f'"{self.wpcli}" plugin deactivate --all '
+            f'--path="{path}"'
+        )
         run_command(command)
     
     def install_theme(self, slug, path, activate=True):
@@ -410,16 +282,6 @@ class WPCLI:
             f'--path="{path}" '
             f'{"--activate" if activate else ""}'
         )
-        
-        # command = [
-        #     self.wpcli,
-        #     'theme',
-        #     'install',
-        #     slug,
-        #     f'--path={path}',
-        #     '--activate' if activate else None
-        # ]
-        
         run_command(command)
     
     def install_themes(self, themes, path):
