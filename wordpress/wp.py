@@ -19,6 +19,10 @@ class WordPress:
         admin_password = config.admin_password
         admin_email = config.admin_email
         
+        if not self.mysql.check_db_connection():
+            print("Cannot connect to the database. Please check your database settings.")
+            exit(1)
+        
         site_name = get_input('Enter the site name: ', required=True)
         site_name = clean_input(site_name)
         
