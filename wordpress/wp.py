@@ -2,9 +2,11 @@ import shutil
 from typing import Literal
 
 import config
+from utils.commands import run_command
 from utils.herd import add_ssl, is_herd_open
 from utils.os_helper import herd_path
 from utils.user_input import get_input, clean_input, get_confirmation, get_input_options
+from utils.time_helper import formatted_time
 
 herd_sites_path, _, _ = herd_path()
 
@@ -242,6 +244,31 @@ class WordPress:
     
     def backup_full_source(self):
         print("Backing up full source code...")
+        selected_websites = self.select_website()
+        
+        for site in selected_websites:
+            site_path = herd_sites_path / site
+            backup_path = herd_sites_path / f'{site}_full_backup_{formatted_time()}.zip'
+            
+            self.wp_cli.delete_all_transients(site_path)
+            self.wp_cli.cache_clear(site_path)
+            self.wp_cli.export_db(site_path)
+            
+            command = [
+                'tar',
+                '-acf',
+                backup_path
+            ]
+            
+            excludes_config = config.excludes
+            for exclude in excludes_config:
+                exclude_build = f'--exclude={exclude}'
+                command.append(exclude_build)
+            
+            command += ['-C', str(herd_sites_path), site]
+            
+            run_command(command, shell=False)
+            print(f'Backup for site "{site}" created at "{backup_path}"')
     
     def backup_by_wpress(self):
         print("Backing up with All-in-One WP Migration plugin")
