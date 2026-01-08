@@ -2,15 +2,21 @@ import subprocess
 from typing import Union, List
 
 
-def run_command(command, output=True, print_output=True, shell=True):
-    result = subprocess.run(command, shell=shell, capture_output=True, text=True)
-    if result.stderr:
-        print(result.stderr)
-    if print_output:
-        print(result.stdout.strip())
-    if output:
-        return result.stdout.strip()
-    return None
+def run_command(command, capture=True, print_output=True, shell=True):
+    result = subprocess.run(
+        command,
+        shell=shell,
+        capture_output=capture,
+        text=True
+    )
+    
+    if result.returncode != 0:
+        raise RuntimeError(result.stderr.strip())
+    
+    if print_output and result.stdout:
+        print(result.stdout)
+    
+    return result.stdout.strip()
 
 # def run_command(
 #         args: Union[str, List[str]],
