@@ -56,7 +56,6 @@ class WPCLI:
         return result
     
     def wp_core_download(self, path, skip_content=True):
-        Path(path).mkdir(parents=True, exist_ok=True)
         command = f'"{self.wpcli}" core download --path="{path}"'
         if skip_content:
             command += ' --skip-content'
