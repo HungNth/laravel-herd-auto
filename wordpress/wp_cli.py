@@ -302,7 +302,6 @@ class WPCLI:
             f'{exclude_args} '
             f'--path="{path}"'
         )
-        # print(command)
         run_command(command)
     
     def install_theme(self, slug, path, activate=True):
@@ -327,5 +326,3 @@ class WPCLI:
 
 # if __name__ == '__main__':
 #     wpcli = WPCLI()
-#     result = wpcli.is_wp_plugin_installed('contact-form-7', r'F:\laravel-herd\sites\astro-estates')
-#     print(result)
