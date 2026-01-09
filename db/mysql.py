@@ -1,5 +1,7 @@
+import os
 import re
 import subprocess
+from typing import List
 
 import config
 from utils.os_helper import is_windows, is_mac
@@ -12,11 +14,16 @@ class MySQL:
         self.db_password = config.db_password
         self.db_host = config.db_host if is_windows() else '127.0.0.1'
         self.db_port = config.db_port
-        self.db_socket = config.db_socket if is_mac() else ''
+        self.db_socket = config.db_socket
     
     def check_db_connection(self):
         try:
-            self.run('-e "SELECT 1;"', print_output=False)
+            command = [
+                '-e',
+                'SELECT 1;'
+            ]
+            # self.run('-e "SELECT 1;"', print_output=False)
+            self.run(command, print_output=False)
             return True
         except Exception as e:
             print(f'Error connecting to database: {e}')
@@ -25,14 +32,35 @@ class MySQL:
     def clean_db_name(self, db_name):
         return db_name.replace('-', '_').replace(' ', '_').lower()
     
-    def run(self, args, *, print_output=True, shell=True):
-        command = f'mysql -u {self.db_user} -P {self.db_port} {self.db_socket} {args}'
+    def run(self, args, *, print_output=True, shell=False):
+        # command = f'mysql -u{self.db_user} -p{self.db_password} -P {self.db_port} {args}'
+        # if is_mac():
+        #     command += f' {self.db_socket}'
+        # command += f' {args}'
+        
+        command = None
+        
+        if isinstance(args, str):
+            args = args.split(' ')
+        elif isinstance(args, List):
+            command = [
+                'mysql',
+                f'-u{self.db_user}',
+                # f'--password={self.db_password}',
+                f'-P{self.db_port}',
+            ]
+        if is_mac():
+            command.append(f'{self.db_socket}')
+        
+        command.extend(args)
+        
+        print(f'Running command: {command}')
         
         result = subprocess.run(
             command,
             shell=shell,
             capture_output=True,
-            text=True
+            text=True,
         )
         
         if result.returncode != 0:
@@ -44,11 +72,14 @@ class MySQL:
         return result.stdout.strip()
     
     def check_database_exists(self, db_name):
-        
         db_name = self.clean_db_name(db_name)
         
         try:
-            result = self.run(f'-e "SHOW DATABASES LIKE \'{db_name}\';"', print_output=False)
+            command = [
+                '-e',
+                f'SHOW DATABASES LIKE {db_name};',
+            ]
+            result = self.run(command, print_output=False)
             return db_name in result
         except Exception as e:
             print(f'Error: {e}')
@@ -58,20 +89,29 @@ class MySQL:
         db_name = self.clean_db_name(db_name)
         
         if self.check_database_exists(db_name):
-            print(f'Database "{db_name}" already exists.\n')
+            print(f'Database "{db_name}" already exists.')
             return
         
         try:
-            self.run(
-                f'-e "CREATE DATABASE IF NOT EXISTS {db_name}; GRANT ALL PRIVILEGES ON {db_name}.* TO root@localhost WITH GRANT OPTION; FLUSH PRIVILEGES;"')
-            print(f'Created database: "{db_name}"\n')
+            command = [
+                '-e',
+                f'CREATE DATABASE IF NOT EXISTS {db_name}; '
+                f'GRANT ALL PRIVILEGES ON {db_name}.* '
+                'TO root@localhost WITH GRANT OPTION; FLUSH PRIVILEGES;'
+            ]
+            self.run(command)
+            print(f'Created database: "{db_name}"')
         except Exception as e:
             print(f'Error: "{db_name}": {e}')
             return
     
     def drop_database(self, db_name):
         db_name = self.clean_db_name(db_name)
-        self.run(f'-e "DROP DATABASE {db_name};"')
+        command = [
+            '-e',
+            f'DROP DATABASE IF EXISTS {db_name};',
+        ]
+        self.run(command)
     
     def get_table_prefix(self, db_name):
         db_name = self.clean_db_name(db_name)
@@ -80,7 +120,11 @@ class MySQL:
             print(f'Database "{db_name}" does not exist.')
             return None
         
-        result = self.run(f'-e "USE {db_name}; SHOW TABLES LIKE \'%_options\';"', print_output=False)
+        command = [
+            '-e',
+            f'USE {db_name}; SHOW TABLES LIKE \'%_options\';'
+        ]
+        result = self.run(command, print_output=False)
         if result:
             table_name = result.splitlines()[1]
             prefix = table_name.replace('options', '')
@@ -126,10 +170,11 @@ class MySQL:
             print(f'Could not determine table prefix for database "{db_name}".')
             return None
         
-        result = self.run(
-            f'-e "USE {db_name}; SELECT ID FROM {prefix}users;"',
-            print_output=False)
-        
+        command = [
+            '-e',
+            f'USE {db_name}; SELECT ID FROM {prefix}users;'
+        ]
+        result = self.run(command, print_output=False)
         if result:
             user_id = result.splitlines()[1]
             return user_id
@@ -153,8 +198,11 @@ class MySQL:
             return
         
         try:
-            self.run(
-                f'-e "USE {db_name}; UPDATE {prefix}users SET user_login = \'{new_username}\' WHERE ID = {user_id};"')
+            command = [
+                '-e',
+                f'USE {db_name}; UPDATE {prefix}users SET user_login = \'{new_username}\' WHERE ID = {user_id};'
+            ]
+            self.run(command)
             print(f'Changed username to "{new_username}" in database "{db_name}".')
         except Exception as e:
             print(f'Error changing username in database "{db_name}": {e}')
@@ -178,8 +226,11 @@ class MySQL:
             return
         
         try:
-            self.run(
-                f'-e "USE {db_name}; UPDATE {prefix}users SET user_pass = MD5(\'{new_password}\') WHERE ID = {user_id};"')
+            command = [
+                '-e',
+                f'USE {db_name}; UPDATE {prefix}users SET user_pass = MD5(\'{new_password}\') WHERE ID = {user_id};'
+            ]
+            self.run(command)
             print(f'Changed password in database "{db_name}".')
         except Exception as e:
             print(f'Error changing password in database "{db_name}": {e}')
@@ -203,8 +254,11 @@ class MySQL:
             return
         
         try:
-            self.run(
-                f'-e "USE {db_name}; UPDATE {prefix}users SET user_email = \'{new_email}\' WHERE ID = {user_id};"')
+            command = [
+                '-e',
+                f'USE {db_name}; UPDATE {prefix}users SET user_email = \'{new_email}\' WHERE ID = {user_id};'
+            ]
+            self.run(command)
             print(f'Changed user email to "{new_email}" in database "{db_name}".')
         except Exception as e:
             print(f'Error changing email in database "{db_name}": {e}')
@@ -223,7 +277,6 @@ class MySQL:
             '--skip-lock-tables',
             db_name
         ]
-        
         with open(output, 'w', encoding='utf-8') as f:
             subprocess.run(command, cwd=export_path, stdout=f, check=True)
     
