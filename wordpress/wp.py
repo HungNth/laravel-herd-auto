@@ -1,4 +1,6 @@
 import shutil
+import subprocess
+import webbrowser
 from pathlib import Path
 from typing import Literal
 
@@ -6,8 +8,8 @@ import config
 from utils.commands import run_command
 from utils.herd import add_ssl, is_herd_running
 from utils.os_helper import herd_path
-from utils.user_input import get_input, clean_input, get_confirmation, get_input_options
 from utils.time_helper import formatted_time
+from utils.user_input import get_input, clean_input, get_confirmation, get_input_options
 
 herd_sites_path, _, _ = herd_path()
 
@@ -22,10 +24,6 @@ class WordPress:
         admin_username = config.admin_username
         admin_password = config.admin_password
         admin_email = config.admin_email
-        
-        if not is_herd_running():
-            print('The Herd Desktop application is not running. Please start Herd and try again.')
-            exit(1)
         
         site_name = get_input('Enter the site name: ', required=True)
         site_name = clean_input(site_name)
@@ -42,7 +40,7 @@ class WordPress:
         if is_default is False:
             admin_username_input = get_input(f'Enter the admin username "{admin_username}": ', default=admin_username,
                                              required=True)
-            admin_pass_input = get_input(f'Enter the admin password "{admin_password}":', default=admin_password,
+            admin_pass_input = get_input(f'Enter the admin password "{admin_password}": ', default=admin_password,
                                          required=True)
             admin_email_input = get_input(f'Enter the admin email "{admin_email}": ', default=admin_email,
                                           required=True)
@@ -70,6 +68,7 @@ class WordPress:
             self.wp_cli.wp_options_set(site_path)
         
         add_ssl(site_path)
+        webbrowser.open(f'https://{site_name}.test/wp-admin')
     
     def delete_websites(self):
         selected_sites = self.select_websites()
@@ -94,8 +93,7 @@ class WordPress:
                 shutil.rmtree(site_path)
                 print(f'Website "{site_name}" and its database have been deleted successfully.\n')
             except Exception as e:
-                print(f'Error deleting website "{site_name}": {e}')
-                return
+                raise ValueError(f'Error deleting website "{site_name}": {e}')
     
     def get_setup_options(self):
         selected_themes = ""
@@ -246,12 +244,20 @@ class WordPress:
             site_path = herd_sites_path / site
             backup_path = herd_sites_path / f'{site}_full_backup_{formatted_time()}.zip'
             
+            for file in site_path.rglob('*.sql'):
+                file.unlink()
+            
+            ai1wm_backups_path = site_path / 'wp-content' / 'ai1wm-backups'
+            if ai1wm_backups_path.exists() and ai1wm_backups_path.is_dir():
+                for file in ai1wm_backups_path.rglob('*.wpress'):
+                    file.unlink()
+            
             print(f'Deleting all transients...')
             self.wp_cli.delete_all_transients(site_path)
             print(f'Clearing cache...')
             self.wp_cli.cache_clear(site_path)
             print(f'Exporting database...')
-            self.wp_cli.export_db(site_path)
+            self.mysql.export_db(site, export_path=site_path)
             
             command = [
                 'tar',
@@ -267,7 +273,7 @@ class WordPress:
             command += ['-C', str(herd_sites_path), site]
             
             print(f'Creating backup for site "{site}"...')
-            run_command(command, shell=False)
+            run_command(command, cwd=herd_sites_path, shell=False)
             print(f'Backup for site "{site}" created at "{backup_path}"')
     
     def backup_by_ai1_plugin(self):
@@ -310,7 +316,7 @@ class WordPress:
             ]
             
             print(f'Creating backup for site "{site}"...')
-            run_command(command, shell=False)
+            run_command(command, cwd=herd_sites_path, shell=False)
             print(f'Backup for site "{site}" created at "{backup_path}"')
             
             self.wp_cli.activate_all_plugins(site_path)
@@ -319,7 +325,7 @@ class WordPress:
         options = [
             'Restore by full source code and database include',
             'Restore by wp-content only',
-            'Restore by plugin All-in-One WP Migration (.wpress file)',
+            'Restore by plugin All-in-One WP Migration (.wpress or .zip file)',
             'Restore by plugin Duplicator'
         ]
         
@@ -334,14 +340,234 @@ class WordPress:
         elif choice == '4':
             self.restore_by_duplicator()
     
-    def restore_full_source(self):
-        print("Restoring full source code...")
+    def restore_full_source(self, site_name=None, backup_file=None):
+        site_name = site_name
+        backup_file = backup_file
+        admin_username_input = config.admin_username
+        admin_pass_input = config.admin_password
+        admin_email_input = config.admin_email
+        
+        if site_name is None:
+            site_name, admin_username_input, admin_pass_input, admin_email_input = self.get_admin_credentials()
+        
+        if backup_file is None:
+            while True:
+                backup_file = get_input('Enter the path to the full backup file (.zip, .tar, .gz): ', required=True)
+                backup_file = backup_file.strip('\'"')
+                backup_file = Path(backup_file).expanduser().resolve()
+                
+                accepted_extensions = ['.zip', '.tar', '.gz']
+                if not backup_file.exists() or not backup_file.is_file() or backup_file.suffix.lower() not in accepted_extensions:
+                    print('Invalid backup file. Please provide a valid .zip, .tar, or .gz file.')
+                    continue
+                break
+        
+        site_path = herd_sites_path / site_name
+        site_path.mkdir(parents=True, exist_ok=True)
+        
+        print(f'Extracting backup file to site path: "{site_path}"')
+        command = [
+            'tar',
+            '-xf',
+            backup_file,
+            '-C',
+            site_path
+        ]
+        print(command)
+        subprocess.run(command, check=True, shell=False)
+        
+        wp_settings_path = site_path / 'wp-settings.php'
+        wp_login_path = site_path / 'wp-login.php'
+        if not wp_settings_path.exists() or not wp_login_path.exists():
+            for subdir in site_path.iterdir():
+                if subdir.is_dir():
+                    potential_wp_settings = subdir / 'wp-settings.php'
+                    potential_wp_login = subdir / 'wp-login.php'
+                    if potential_wp_settings.exists() and potential_wp_login.exists():
+                        for item in subdir.iterdir():
+                            shutil.move(str(item), str(site_path / item.name))
+                        shutil.rmtree(subdir)
+                        break
+        
+        wp_config_path = site_path / 'wp-config.php'
+        if wp_config_path.exists():
+            wp_config_path.unlink()
+        
+        self.wp_cli.wp_config_create(site_path, site_name)
+        self.wp_cli.wp_db_create(site_path)
+        
+        sql_files = list(site_path.rglob('*.sql'))
+        
+        if not sql_files:
+            sql_file = None
+        else:
+            sql_file = max(sql_files, key=lambda f: f.stat().st_mtime)
+        
+        if sql_file is None:
+            print('No SQL file found in the backup. Please provide the path to the SQL file to restore the database.')
+            while True:
+                sql_file = get_input('Enter the path to the SQL file (.sql): ', required=True)
+                if not Path(sql_file).exists():
+                    print('The provided SQL file does not exist. Cannot restore database.')
+                    continue
+                break
+        
+        print('Importing database...')
+        self.mysql.import_db(site_name, sql_file)
+        
+        self.mysql.update_table_prefix(site_name, wp_config_path)
+        self.mysql.change_username(site_name, admin_username_input)
+        self.mysql.change_password(site_name, admin_pass_input)
+        self.mysql.change_email(site_name, admin_email_input)
+        self.wp_cli.update_admin_email(site_path, admin_email_input)
+        self.wp_cli.update_site_url(site_path)
+        self.wp_cli.delete_all_transients(site_path)
+        self.wp_cli.cache_clear(site_path)
+        
+        add_ssl(site_path)
+        webbrowser.open(f'https://{site_name}.test/wp-admin')
     
-    def restore_by_wp_content(self):
-        print("Restoring wp-content only")
+    def restore_by_wp_content(self, site_name=None, wp_content_path=None, sql_file=None):
+        site_name = site_name
+        wp_content_path = wp_content_path
+        sql_file = sql_file
+        admin_username_input = config.admin_username
+        admin_pass_input = config.admin_password
+        admin_email_input = config.admin_email
+        
+        if site_name is None:
+            site_name, admin_username_input, admin_pass_input, admin_email_input = self.get_admin_credentials()
+        
+        if wp_content_path is None:
+            while True:
+                wp_content_path = get_input('Enter the path to the folder "wp-content": ', required=True)
+                wp_content_path = wp_content_path.strip('\'"')
+                wp_content_path = Path(wp_content_path).expanduser().resolve()
+                if 'wp-content' not in str(wp_content_path):
+                    print('Invalid backup folder. Please provide the path to the "wp-content" folder.')
+                    continue
+                
+                plugins_path = wp_content_path / 'plugins'
+                themes_path = wp_content_path / 'themes'
+                if not (plugins_path.exists() and themes_path.exists()):
+                    print('Invalid backup file. Please provide a valid .zip, .tar, or .gz file.')
+                    continue
+                break
+        
+        if sql_file is None:
+            while True:
+                sql_file = get_input('Enter the path to the SQL file (.sql): ', required=True)
+                sql_file = sql_file.strip('\'"')
+                sql_file = Path(sql_file).expanduser().resolve()
+                if not sql_file.exists():
+                    print('The provided SQL file does not exist. Cannot restore database.')
+                    continue
+                break
+        
+        site_path = herd_sites_path / site_name
+        wp_config_path = site_path / 'wp-config.php'
+        self.wp_cli.wp_install(site_name, admin_username_input, admin_pass_input, admin_email_input)
+        
+        # Copy wp-content
+        dest_wp_content_path = site_path / 'wp-content'
+        print('Copying wp-content folder...')
+        shutil.copytree(wp_content_path, dest_wp_content_path, dirs_exist_ok=True)
+        
+        print('Importing database...')
+        self.mysql.drop_database(site_name)
+        self.wp_cli.wp_db_create(site_path)
+        self.mysql.import_db(site_name, sql_file)
+        
+        self.mysql.update_table_prefix(site_name, wp_config_path)
+        self.mysql.change_username(site_name, admin_username_input)
+        self.mysql.change_password(site_name, admin_pass_input)
+        self.mysql.change_email(site_name, admin_email_input)
+        self.wp_cli.update_admin_email(site_path, admin_email_input)
+        self.wp_cli.update_site_url(site_path)
+        self.wp_cli.delete_all_transients(site_path)
+        self.wp_cli.cache_clear(site_path)
+        
+        add_ssl(site_path)
+        webbrowser.open(f'https://{site_name}.test/wp-admin')
     
-    def restore_by_wpress(self):
-        print("Restoring with All-in-One WP Migration plugin")
+    def restore_by_wpress(self, site_name=None, wpress_path=None):
+        site_name = site_name
+        wpress_path = wpress_path
+        admin_username_input = config.admin_username
+        admin_pass_input = config.admin_password
+        admin_email_input = config.admin_email
+        
+        if site_name is None:
+            site_name, admin_username_input, admin_pass_input, admin_email_input = self.get_admin_credentials()
+        
+        if wpress_path is None:
+            while True:
+                wpress_path = get_input('Enter the path to the .wpress or .zip backup file: ', required=True)
+                wpress_path = wpress_path.strip('\'"')
+                wpress_path = Path(wpress_path).expanduser().resolve()
+                accepted_extensions = ['.wpress', '.zip', '.tar', '.gz']
+                if not wpress_path.exists() or not wpress_path.is_file() or wpress_path.suffix.lower() not in accepted_extensions:
+                    print('Invalid backup file. Please provide a valid .zip, .tar, or .gz file.')
+                    continue
+                break
+        
+        site_path = herd_sites_path / site_name
+        ai1wm_backups_path = site_path / 'wp-content' / 'ai1wm-backups'
+        wp_config_path = site_path / 'wp-config.php'
+        self.wp_cli.wp_install(site_name, admin_username_input, admin_pass_input, admin_email_input)
+        
+        required_plugin = 'all-in-one-wp-migration-unlimited-extension'
+        ai1wmu = self.wp_cli.is_plugin_installed(required_plugin, site_path)
+        if not ai1wmu:
+            print('All-in-One WP Migration Unlimited Extension plugin is not installed.')
+            print('Installing All-in-One WP Migration Unlimited Extension plugin...')
+            plugin_url = self.wp_api.get_download_url(required_plugin)
+            self.wp_cli.install_plugins(['all-in-one-wp-migration', plugin_url], site_path)
+        self.wp_cli.activate_plugin(required_plugin, site_path)
+        
+        wpress_file_name = ''
+        if wpress_path.suffix.lower() == '.zip':
+            print('Extracting .zip backup file...')
+            command = [
+                'tar',
+                '-xf',
+                wpress_path,
+                '-C',
+                ai1wm_backups_path
+            ]
+            run_command(command, cwd=site_path, shell=False)
+        
+        elif wpress_path.suffix.lower() == '.wpress':
+            print('Copying .wpress file to ai1wm-backups...')
+            ai1wm_backups_path.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(wpress_path, ai1wm_backups_path)
+        
+        wpress_files = list(ai1wm_backups_path.rglob('*.wpress'))
+        if not wpress_files:
+            print('No .wpress file found in the extracted backup. Cannot proceed with restoration.')
+            exit(0)
+        
+        wpress_file = max(wpress_files, key=lambda f: f.stat().st_mtime)
+        wpress_file_name = wpress_file.name
+        
+        print('Restoring from .wpress file...')
+        print(f'Site path: {site_path}')
+        print(f'Wpress file name: {wpress_file_name}')
+        
+        self.wp_cli.ai1_restore(site_path, wpress_file_name, auto_confirm=True)
+        
+        self.mysql.update_table_prefix(site_name, wp_config_path)
+        self.mysql.change_username(site_name, admin_username_input)
+        self.mysql.change_password(site_name, admin_pass_input)
+        self.mysql.change_email(site_name, admin_email_input)
+        self.wp_cli.update_admin_email(site_path, admin_email_input)
+        self.wp_cli.activate_all_plugins(site_path)
+        self.wp_cli.update_site_url(site_path)
+        self.wp_cli.delete_all_transients(site_path)
+        self.wp_cli.cache_clear(site_path)
+        
+        add_ssl(site_path)
+        webbrowser.open(f'https://{site_name}.test/wp-admin')
     
     def restore_by_duplicator(self):
         print('Restoring with Duplicator plugin')
