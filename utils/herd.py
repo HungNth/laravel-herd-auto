@@ -18,7 +18,3 @@ def is_herd_running():
     except FileNotFoundError:
         print('Herd command not found. Please ensure Herd is installed and accessible in your PATH.')
         return False
-
-# if __name__ == '__main__':
-#     connection = is_herd_open()
-#     print(connection)
