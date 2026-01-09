@@ -1,7 +1,9 @@
+import re
 import subprocess
 
 import config
 from utils.os_helper import is_windows, is_mac
+from utils.time_helper import formatted_time
 
 
 class MySQL:
@@ -69,11 +71,7 @@ class MySQL:
     
     def drop_database(self, db_name):
         db_name = self.clean_db_name(db_name)
-        
-        if not self.check_database_exists(db_name):
-            print(f'Database "{db_name}" does not exist.')
-        else:
-            self.run(f'-e "DROP DATABASE {db_name};"')
+        self.run(f'-e "DROP DATABASE {db_name};"')
     
     def get_table_prefix(self, db_name):
         db_name = self.clean_db_name(db_name)
@@ -88,6 +86,33 @@ class MySQL:
             prefix = table_name.replace('options', '')
             return prefix
         return None
+    
+    def update_table_prefix(self, db_name, wp_config_path):
+        db_name = self.clean_db_name(db_name)
+        
+        prefix = self.get_table_prefix(db_name)
+        if prefix != 'wp_':
+            try:
+                with open(wp_config_path, 'r', encoding='utf-8') as f:
+                    config_content = f.read()
+                
+                if "$table_prefix" in config_content:
+                    updated_content = re.sub(
+                        r"\$table_prefix\s*=\s*'[^']*';",
+                        f"$table_prefix = '{prefix}';",
+                        config_content
+                    )
+                else:
+                    updated_content = config_content + f"\n$table_prefix = '{prefix}';\n"
+                
+                with open(wp_config_path, 'w', encoding='utf-8') as f:
+                    f.write(updated_content)
+                
+                print(f'Updated table prefix on :wp-config.php" to "{prefix}"')
+            except IOError as e:
+                raise ValueError(f'I/O error: {e}')
+            except Exception as e:
+                raise ValueError(f'Unexpected error: {e}')
     
     def get_admin_id(self, db_name):
         db_name = self.clean_db_name(db_name)
@@ -184,6 +209,35 @@ class MySQL:
         except Exception as e:
             print(f'Error changing email in database "{db_name}": {e}')
             return
+    
+    def export_db(self, db_name, export_path):
+        db_name = self.clean_db_name(db_name)
+        output = f'{export_path}/{db_name}_{formatted_time()}.sql'
+        
+        command = [
+            'mysqldump',
+            f'-u{self.db_user}',
+            f'--password={self.db_password}',
+            '--single-transaction',
+            '--quick',
+            '--skip-lock-tables',
+            db_name
+        ]
+        
+        with open(output, 'w', encoding='utf-8') as f:
+            subprocess.run(command, cwd=export_path, stdout=f, check=True)
+    
+    def import_db(self, db_name, sql_file):
+        db_name = self.clean_db_name(db_name)
+        
+        cmd = [
+            'mysql',
+            f'-u{self.db_user}',
+            f'--password={self.db_password}',
+            db_name
+        ]
+        with open(sql_file, 'r', encoding='utf-8') as f:
+            subprocess.run(cmd, stdin=f, check=True)
 
 # mysql = MySQL()
 # connection = mysql.check_database_exists('wp01')
