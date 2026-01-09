@@ -373,8 +373,7 @@ class WordPress:
             '-C',
             site_path
         ]
-        print(command)
-        subprocess.run(command, check=True, shell=False)
+        run_command(command, cwd=site_path, shell=False)
         
         wp_settings_path = site_path / 'wp-settings.php'
         wp_login_path = site_path / 'wp-login.php'
@@ -525,7 +524,6 @@ class WordPress:
             self.wp_cli.install_plugins(['all-in-one-wp-migration', plugin_url], site_path)
         self.wp_cli.activate_plugin(required_plugin, site_path)
         
-        wpress_file_name = ''
         if wpress_path.suffix.lower() == '.zip':
             print('Extracting .zip backup file...')
             command = [
@@ -570,4 +568,52 @@ class WordPress:
         webbrowser.open(f'https://{site_name}.test/wp-admin')
     
     def restore_by_duplicator(self):
-        print('Restoring with Duplicator plugin')
+        site_name, admin_username_input, admin_pass_input, admin_email_input = self.get_admin_credentials()
+        
+        while True:
+            package_path = get_input('Enter the path to the Duplicator package (.zip): ', required=True)
+            package_path = package_path.strip('\'"')
+            package_path = Path(package_path).expanduser().resolve()
+            if not package_path.exists() or not package_path.is_file() or package_path.suffix.lower() != '.zip':
+                print('Invalid package file. Please provide a valid .zip file.')
+                continue
+            break
+        
+        site_path = herd_sites_path / site_name
+        site_path.mkdir(parents=True, exist_ok=True)
+        
+        print(f'Extracting backup file to site path: "{site_path}"')
+        command = [
+            'tar',
+            '-xf',
+            package_path,
+            '-C',
+            site_path
+        ]
+        run_command(command, cwd=site_path, shell=False)
+        
+        installer_file = site_path / 'installer.php'
+        if not installer_file.exists():
+            for subdir in site_path.iterdir():
+                if subdir.is_dir():
+                    potential_installer = subdir / 'installer.php'
+                    if potential_installer.exists():
+                        for item in subdir.iterdir():
+                            shutil.move(str(item), str(site_path / item.name))
+                        shutil.rmtree(subdir)
+                        break
+        
+        print('Creating database...')
+        self.mysql.create_database(site_name)
+        
+        add_ssl(site_path)
+        webbrowser.open(f'https://{site_name}.test/installer.php')
+        
+        print('If you have completed the installation via the web installer.')
+        print('Please run the following commands to finalize setup:')
+        is_finished = get_confirmation('Have you completed the installation via the web installer? (Y/n): ',
+                                       default=True)
+        
+        if is_finished:
+            self.reset_admin_info([site_name])
+            self.setup_wp_options([site_name])
