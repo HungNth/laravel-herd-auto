@@ -1,16 +1,25 @@
 import subprocess
 
 
-def run_command(command, capture=True, print_output=True, shell=True, pwsh=False):
+def run_command(command, cwd, capture=True, print_output=True, shell=True, pwsh=False, ):
     if pwsh:
-        command = f'pwsh -NoProfile -Command "{command}"'
+        command = f'pwsh -NoProfile -Command \'{command}\''
     
-    result = subprocess.run(
-        command,
-        shell=shell,
-        capture_output=capture,
-        text=True
-    )
+    if cwd is None:
+        result = subprocess.run(
+            command,
+            shell=shell,
+            capture_output=capture,
+            text=True,
+        )
+    else:
+        result = subprocess.run(
+            command,
+            cwd=cwd,
+            shell=shell,
+            capture_output=capture,
+            text=True,
+        )
     
     if result.returncode != 0:
         raise RuntimeError(result.stderr.strip())
