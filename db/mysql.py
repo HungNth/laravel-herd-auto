@@ -22,7 +22,6 @@ class MySQL:
                 '-e',
                 'SELECT 1;'
             ]
-            # self.run('-e "SELECT 1;"', print_output=False)
             self.run(command, print_output=False)
             return True
         except Exception as e:
@@ -77,7 +76,7 @@ class MySQL:
         try:
             command = [
                 '-e',
-                f'SHOW DATABASES LIKE {db_name};',
+                f'SHOW DATABASES LIKE \'{db_name}\';',
             ]
             result = self.run(command, print_output=False)
             return db_name in result
@@ -95,12 +94,12 @@ class MySQL:
         try:
             command = [
                 '-e',
-                f'CREATE DATABASE IF NOT EXISTS {db_name}; '
-                f'GRANT ALL PRIVILEGES ON {db_name}.* '
+                f'CREATE DATABASE IF NOT EXISTS \'{db_name}\'; '
+                f'GRANT ALL PRIVILEGES ON \'{db_name}\'.* '
                 'TO root@localhost WITH GRANT OPTION; FLUSH PRIVILEGES;'
             ]
             self.run(command)
-            print(f'Created database: "{db_name}"')
+            print(f'Created database: \'{db_name}\'')
         except Exception as e:
             print(f'Error: "{db_name}": {e}')
             return
@@ -109,7 +108,7 @@ class MySQL:
         db_name = self.clean_db_name(db_name)
         command = [
             '-e',
-            f'DROP DATABASE IF EXISTS {db_name};',
+            f'DROP DATABASE IF EXISTS \'{db_name}\';',
         ]
         self.run(command)
     
@@ -172,7 +171,7 @@ class MySQL:
         
         command = [
             '-e',
-            f'USE {db_name}; SELECT ID FROM {prefix}users;'
+            f'USE \'{db_name}\'; SELECT ID FROM {prefix}users;'
         ]
         result = self.run(command, print_output=False)
         if result:
@@ -200,7 +199,7 @@ class MySQL:
         try:
             command = [
                 '-e',
-                f'USE {db_name}; UPDATE {prefix}users SET user_login = \'{new_username}\' WHERE ID = {user_id};'
+                f'USE \'{db_name}\'; UPDATE {prefix}users SET user_login = \'{new_username}\' WHERE ID = {user_id};'
             ]
             self.run(command)
             print(f'Changed username to "{new_username}" in database "{db_name}".')
@@ -228,7 +227,7 @@ class MySQL:
         try:
             command = [
                 '-e',
-                f'USE {db_name}; UPDATE {prefix}users SET user_pass = MD5(\'{new_password}\') WHERE ID = {user_id};'
+                f'USE \'{db_name}\'; UPDATE {prefix}users SET user_pass = MD5(\'{new_password}\') WHERE ID = {user_id};'
             ]
             self.run(command)
             print(f'Changed password in database "{db_name}".')
@@ -256,7 +255,7 @@ class MySQL:
         try:
             command = [
                 '-e',
-                f'USE {db_name}; UPDATE {prefix}users SET user_email = \'{new_email}\' WHERE ID = {user_id};'
+                f'USE \'{db_name}\'; UPDATE {prefix}users SET user_email = \'{new_email}\' WHERE ID = {user_id};'
             ]
             self.run(command)
             print(f'Changed user email to "{new_email}" in database "{db_name}".')
