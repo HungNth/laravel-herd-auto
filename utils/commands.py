@@ -22,7 +22,7 @@ def run_command(command, cwd, capture=True, print_output=True, shell=True, pwsh=
         )
     
     if result.returncode != 0:
-        raise RuntimeError(result.stderr.strip())
+        return result.stderr.strip()
     
     if print_output and result.stdout:
         print(result.stdout)
