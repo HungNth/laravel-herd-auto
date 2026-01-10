@@ -201,6 +201,8 @@ class WordPress:
             'Reset Admin information to default',
             'Setup WordPress options',
             'Both 1 and 2',
+            'Install Themes',
+            'Install Plugins'
         ]
         print("Select an option to configure WordPress:")
         choice = get_input_options(options)
@@ -214,6 +216,16 @@ class WordPress:
         elif choice == '3':
             self.reset_admin_info(selected_website)
             self.setup_wp_options(selected_website)
+        elif choice == '4':
+            for site in selected_website:
+                site_path = herd_sites_path / site
+                selected_themes = self.wp_api.select_packages("theme")
+                self.install_packages(site_path, selected_themes, item_type="theme")
+        elif choice == '5':
+            for site in selected_website:
+                site_path = herd_sites_path / site
+                selected_plugins = self.wp_api.select_packages("plugin")
+                self.install_packages(site_path, selected_plugins, item_type="plugin")
         return None
     
     def backup_options(self):
