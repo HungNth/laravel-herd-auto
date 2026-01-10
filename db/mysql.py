@@ -1,4 +1,3 @@
-import os
 import re
 import subprocess
 from typing import List
@@ -52,9 +51,6 @@ class MySQL:
             command.append(f'{self.db_socket}')
         
         command.extend(args)
-        
-        print(f'Running command: {command}')
-        
         result = subprocess.run(
             command,
             shell=shell,
