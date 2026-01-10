@@ -198,21 +198,12 @@ class WordPress:
     
     def configure_wp(self):
         options = [
-            '1. Reset Admin information to default',
-            '2. Setup WordPress options',
-            '3. Both 1 and 2',
-            '4. Exit'
+            'Reset Admin information to default',
+            'Setup WordPress options',
+            'Both 1 and 2',
         ]
         print("Select an option to configure WordPress:")
-        for option in options:
-            print(option)
-        choice = get_input('Your choice (1-4): ', required=True)
-        if choice == '4':
-            exit(0)
-        
-        if choice not in ['1', '2', '3']:
-            print("Invalid choice. Please select a valid option.")
-            return self.configure_wp()
+        choice = get_input_options(options)
         
         selected_website = self.select_websites()
         
