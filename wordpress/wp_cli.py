@@ -59,7 +59,7 @@ class WPCLI:
         command = f'"{self.wpcli}" core download --path="{path}"'
         if skip_content:
             command += ' --skip-content'
-        result = run_command(command, cwd=None)
+        result = run_command(command, cwd=herd_sites_path)
         return result
     
     def wp_config_create(self, path, db_name, db_prefix='wp_'):
@@ -107,8 +107,7 @@ class WPCLI:
     def wp_config_set(self, path, key, value):
         command = (
             f'"{self.wpcli}" config set '
-            f'"{key}" "{value}" '
-            f'--path="{path}"'
+            f'"{key}" "{value}"'
         )
         result = run_command(command, cwd=path)
         return result
@@ -121,7 +120,6 @@ class WPCLI:
             run_command(command, cwd=path)
         
         cmd = [
-            self.wpcli,
             'wp',
             'rewrite',
             'structure',
@@ -220,7 +218,7 @@ class WPCLI:
         )
         run_command(command2, cwd=path, print_output=False)
     
-    def install_plugin(self, slug, path, activate=True):
+    def install_plugin(self, slug, path, activate=False):
         command = (
             f'"{self.wpcli}" plugin install "{slug}"'
         )
@@ -228,7 +226,7 @@ class WPCLI:
             command += ' --activate'
         run_command(command, cwd=path)
     
-    def install_plugins(self, plugins, path, activate=True):
+    def install_plugins(self, plugins, path, activate=False):
         for plugin in plugins:
             self.install_plugin(plugin, path, activate=activate)
     
