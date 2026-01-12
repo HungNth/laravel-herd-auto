@@ -19,8 +19,27 @@ def clean_input(user_input):
     return user_input.replace(" ", "-").lower()
 
 
-def clean_selection(user_input):
-    return user_input.replace(" ,", ",").replace(", ", ",").replace(" ", ",").split(",")
+# def clean_selection(user_input):
+#     return user_input.replace(" ,", ",").replace(", ", ",").replace(" ", ",").split(",")
+def clean_selection(selection: str):
+    result = []
+    
+    selection = selection.replace(" ,", ",").replace(", ", ",").replace(" ", ",")
+    parts = selection.split(",")
+    
+    for part in parts:
+        if '-' in part:
+            start, end = part.split('-', 1)
+            start, end = int(start), int(end)
+            
+            if start > end:
+                start, end = end, start
+            
+            result.extend(str(i) for i in range(start, end + 1))
+        else:
+            result.append(part)
+    
+    return list(dict.fromkeys(result))
 
 
 def get_confirmation(prompt, default: Literal[True, False] = None):
