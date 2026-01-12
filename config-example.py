@@ -5,7 +5,7 @@ win_herd_bin_path = r'C:\Users\HungOMS\.config\herd\bin'
 
 mac_herd_sites_path = r''
 mac_herd_cached_path = r''
-mac_herd_bin_path = r'/Users/MAC/Library/Application Support/Herd/bin'
+mac_herd_bin_path = r'/usr/local/bin'
 
 admin_username = 'admin'
 admin_password = 'admin'
