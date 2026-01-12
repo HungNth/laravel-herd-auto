@@ -51,6 +51,7 @@ class MySQL:
             command.append(f'{self.db_socket}')
         
         command.extend(args)
+        # print(command)
         result = subprocess.run(
             command,
             shell=shell,
@@ -102,7 +103,7 @@ class MySQL:
         db_name = self.clean_db_name(db_name)
         command = [
             '-e',
-            f'DROP DATABASE IF EXISTS \'{db_name}\';',
+            f'DROP DATABASE IF EXISTS `{db_name}`;',
         ]
         self.run(command)
     
