@@ -119,13 +119,18 @@ class WPCLI:
             )
             run_command(command, cwd=path)
         
-        cmd = [
-            'wp',
-            'rewrite',
-            'structure',
-            '/%category%/%postname%/'
-        ]
-        subprocess.run(cmd, cwd=path)
+        if is_windows():
+            cmd = f'"{self.wpcli}" rewrite structure "/%category%/%postname%/"'
+            subprocess.run(cmd, cwd=path, shell=True)
+        
+        elif is_mac():
+            cmd = [
+                'wp',
+                'rewrite',
+                'structure',
+                '/%category%/%postname%/'
+            ]
+            subprocess.run(cmd, cwd=path)
     
     def get_user_id(self, path):
         command = (
