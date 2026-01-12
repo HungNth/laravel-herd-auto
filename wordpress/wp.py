@@ -1,4 +1,5 @@
 import shutil
+import sys
 import webbrowser
 from pathlib import Path
 from typing import Literal
@@ -72,13 +73,13 @@ class WordPress:
     def delete_websites(self):
         selected_sites = self.select_websites()
         if not selected_sites:
-            exit(0)
+            sys.exit(0)
         
         print(f'You have selected the following websites for deletion: {", ".join(selected_sites)}')
         if not get_confirmation("Are you sure you want to delete these websites? This action cannot be undone. (y/N): ",
                                 default=False):
             print("Deletion cancelled by user.")
-            exit(0)
+            sys.exit(0)
         
         for site in selected_sites:
             self.delete_website(site)
@@ -309,10 +310,10 @@ class WordPress:
                     wpress_parent_path = Path(wpress_path).parent
                 else:
                     print('Error: Backup file not found after AI1 backup command.')
-                    exit(1)
+                    sys.exit(1)
             else:
                 print('Error: Could not find backup location in AI1 backup command output.')
-                exit(1)
+                sys.exit(1)
             
             backup_path = herd_sites_path / f'{site}_ai1m_backup_{formatted_time()}.zip'
             command = [
@@ -558,7 +559,7 @@ class WordPress:
                 print(f'- {wpress_file}')
         else:
             print('No .wpress files found in the provided backup. Cannot restore.')
-            exit(0)
+            sys.exit(0)
         
         wpress_file = max(wpress_files, key=lambda f: f.stat().st_mtime)
         wpress_file_name = wpress_file.name

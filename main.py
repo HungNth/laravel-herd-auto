@@ -15,7 +15,7 @@ def main():
     is_mysql_connected = mysql.check_db_connection()
     if not is_mysql_connected:
         print('Unable to connect to MySQL. Please check your MySQL configuration.')
-        exit(1)
+        sys.exit(1)
     
     wp = WordPress(wp_cli, wp_api, mysql)
     

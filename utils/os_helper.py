@@ -1,4 +1,5 @@
 import platform
+import sys
 from pathlib import Path
 
 _OS_NAME = None
@@ -27,7 +28,7 @@ def herd_path():
     if is_windows():
         from config import win_herd_sites_path, win_herd_cached_path, win_herd_bin_path
         if not win_herd_sites_path or not win_herd_cached_path or not win_herd_bin_path:
-            return exit("Please configure the herd paths in 'config.py' for Windows.")
+            return sys.exit("Please configure the herd paths in 'config.py' for Windows.")
         herd_sites_path = Path(win_herd_sites_path).expanduser().resolve()
         herd_cached_path = Path(win_herd_cached_path).expanduser().resolve()
         herd_bin_path = Path(win_herd_bin_path).expanduser().resolve()
@@ -36,7 +37,7 @@ def herd_path():
     elif is_mac():
         from config import mac_herd_sites_path, mac_herd_cached_path, mac_herd_bin_path
         if not mac_herd_sites_path or not mac_herd_cached_path or not mac_herd_bin_path:
-            return exit("Please configure the herd paths in 'config.py' for MacOs.")
+            return sys.exit("Please configure the herd paths in 'config.py' for MacOs.")
         herd_sites_path = Path(mac_herd_sites_path).expanduser().resolve()
         herd_cached_path = Path(mac_herd_cached_path).expanduser().resolve()
         herd_bin_path = Path(mac_herd_bin_path).expanduser().resolve()

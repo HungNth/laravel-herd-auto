@@ -1,3 +1,4 @@
+import sys
 from typing import Literal
 
 
@@ -6,7 +7,7 @@ def get_input(prompt, default=None, required=False):
         user_input = input(prompt)
         if user_input == 'exit':
             print("Exiting the program.")
-            exit(0)
+            sys.exit(0)
         if not user_input and default is not None:
             return default
         if required and not user_input:
@@ -51,7 +52,7 @@ def get_confirmation(prompt, default: Literal[True, False] = None):
         
         if choice == 'exit':
             print("Exiting the program.")
-            exit(0)
+            sys.exit(0)
         
         if choice == '' and default is not None:
             return default
@@ -83,6 +84,6 @@ def get_input_options(options):
         
         if choice == str(len(options)):
             print('Exiting the program.')
-            exit(0)
+            sys.exit(0)
         
         return choice
