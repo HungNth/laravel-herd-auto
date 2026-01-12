@@ -8,3 +8,5 @@ dist
 .venv
 config.py
 __pycache__
+build
+main.spec
