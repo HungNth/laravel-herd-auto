@@ -1,12 +1,11 @@
 import shutil
-import subprocess
 import webbrowser
 from pathlib import Path
 from typing import Literal
 
 import config
 from utils.commands import run_command
-from utils.herd import add_ssl, is_herd_running
+from utils.herd import add_ssl
 from utils.os_helper import herd_path
 from utils.time_helper import formatted_time
 from utils.user_input import get_input, clean_input, get_confirmation, get_input_options
@@ -292,8 +291,8 @@ class WordPress:
             print('Deactivating all plugins...')
             self.wp_cli.deactivate_all_plugins(site_path)
             required_plugin = 'all-in-one-wp-migration-unlimited-extension'
-            ai1wmu = self.wp_cli.is_plugin_installed(required_plugin, site_path)
-            if not ai1wmu:
+            plugin_list = self.wp_cli.plugin_list(site_path, field='name')
+            if required_plugin not in plugin_list:
                 print('All-in-One WP Migration Unlimited Extension plugin is not installed.')
                 print('Installing All-in-One WP Migration Unlimited Extension plugin...')
                 plugin_url = self.wp_api.get_download_url(required_plugin)
@@ -302,11 +301,18 @@ class WordPress:
             
             print(f'Backing up site "{site}" to ".wpress"...')
             result = self.wp_cli.ai1_backup(site_path)
-            wpress_path = ''
-            wpress_parent_path = ''
             if 'Backup location' in result:
                 wpress_path = result.split('Backup location: ')[1].strip()
-                wpress_parent_path = Path(wpress_path).parent
+                # check wpress_path exists
+                if Path(wpress_path).exists():
+                    wpress_path = wpress_path
+                    wpress_parent_path = Path(wpress_path).parent
+                else:
+                    print('Error: Backup file not found after AI1 backup command.')
+                    exit(1)
+            else:
+                print('Error: Could not find backup location in AI1 backup command output.')
+                exit(1)
             
             backup_path = herd_sites_path / f'{site}_ai1m_backup_{formatted_time()}.zip'
             command = [
@@ -502,6 +508,10 @@ class WordPress:
         if site_name is None:
             site_name, admin_username_input, admin_pass_input, admin_email_input = self.get_admin_credentials()
         
+        site_path = herd_sites_path / site_name
+        ai1wm_backups_path = site_path / 'wp-content' / 'ai1wm-backups'
+        wp_config_path = site_path / 'wp-config.php'
+        
         if wpress_path is None:
             while True:
                 wpress_path = get_input('Enter the path to the .wpress or .zip backup file: ', required=True)
@@ -513,14 +523,12 @@ class WordPress:
                     continue
                 break
         
-        site_path = herd_sites_path / site_name
-        ai1wm_backups_path = site_path / 'wp-content' / 'ai1wm-backups'
-        wp_config_path = site_path / 'wp-config.php'
         self.wp_cli.wp_install(site_name, admin_username_input, admin_pass_input, admin_email_input)
         
         required_plugin = 'all-in-one-wp-migration-unlimited-extension'
-        ai1wmu = self.wp_cli.is_plugin_installed(required_plugin, site_path)
-        if not ai1wmu:
+        exclude = ['duplicator-pro', 'updraftplus']
+        plugin_list = self.wp_cli.plugin_list(site_path, field='name')
+        if required_plugin not in plugin_list:
             print('All-in-One WP Migration Unlimited Extension plugin is not installed.')
             print('Installing All-in-One WP Migration Unlimited Extension plugin...')
             plugin_url = self.wp_api.get_download_url(required_plugin)
@@ -544,8 +552,12 @@ class WordPress:
             shutil.copy2(wpress_path, ai1wm_backups_path)
         
         wpress_files = list(ai1wm_backups_path.rglob('*.wpress'))
-        if not wpress_files:
-            print('No .wpress file found in the extracted backup. Cannot proceed with restoration.')
+        if len(wpress_files) > 0:
+            print('Founded .wpress files:')
+            for wpress_file in wpress_files:
+                print(f'- {wpress_file}')
+        else:
+            print('No .wpress files found in the provided backup. Cannot restore.')
             exit(0)
         
         wpress_file = max(wpress_files, key=lambda f: f.stat().st_mtime)
@@ -562,7 +574,7 @@ class WordPress:
         self.mysql.change_password(site_name, admin_pass_input)
         self.mysql.change_email(site_name, admin_email_input)
         self.wp_cli.update_admin_email(site_path, admin_email_input)
-        self.wp_cli.activate_all_plugins(site_path)
+        self.wp_cli.activate_all_plugins(site_path, exclude=exclude)
         self.wp_cli.update_site_url(site_path)
         self.wp_cli.delete_all_transients(site_path)
         self.wp_cli.cache_clear(site_path)
