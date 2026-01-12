@@ -223,17 +223,20 @@ class WPCLI:
         )
         run_command(command2, cwd=path, print_output=False)
     
-    def install_plugin(self, slug, path, activate=False):
+    def install_plugin(self, slug, path, activate=False, force=False):
         command = (
             f'"{self.wpcli}" plugin install "{slug}"'
         )
+        if force:
+            command += ' --force'
         if activate:
             command += ' --activate'
+        
         run_command(command, cwd=path)
     
-    def install_plugins(self, plugins, path, activate=False):
+    def install_plugins(self, plugins, path, activate=False, force=False):
         for plugin in plugins:
-            self.install_plugin(plugin, path, activate=activate)
+            self.install_plugin(plugin, path, activate=activate, force=force)
     
     def activate_plugin(self, slug, path):
         command = (
@@ -246,15 +249,30 @@ class WPCLI:
             f'"{self.wpcli}" plugin is-installed "{slug}"'
         )
         try:
-            run_command(command, cwd=path, print_output=False)
+            run_command(command, cwd=path)
             return True
         except RuntimeError:
             return False
     
-    def activate_all_plugins(self, path):
+    def plugin_list(self, path, field=None, status=None):
+        command = (
+            f'"{self.wpcli}" plugin list'
+        )
+        if field is not None:
+            command += f' --field={field}'
+        if status is not None:
+            command += f' --status={status}'
+        
+        result = run_command(command, cwd=path, print_output=False)
+        return result
+    
+    def activate_all_plugins(self, path, exclude=None):
         command = (
             f'"{self.wpcli}" plugin activate --all'
         )
+        if exclude is not None and isinstance(exclude, list):
+            exclude_args = f'--exclude={",".join(exclude)}'
+            command += f' {exclude_args}'
         run_command(command, cwd=path)
     
     def deactivate_all_plugins(self, path, exclude=None):
@@ -270,19 +288,20 @@ class WPCLI:
         
         run_command(command, cwd=path)
     
-    def install_theme(self, slug, path, activate=True):
+    def install_theme(self, slug, path, activate=True, force=False):
         command = (
             f'"{self.wpcli}" theme install "{slug}"'
         )
-        
+        if force:
+            command += ' --force'
         if activate:
             command += ' --activate'
         
         run_command(command, cwd=path)
     
-    def install_themes(self, themes, path):
+    def install_themes(self, themes, path, force=False):
         for theme in themes:
-            self.install_theme(theme, path)
+            self.install_theme(theme, path, force=force)
     
     def ai1_backup(self, path):
         command = (
@@ -304,3 +323,4 @@ class WPCLI:
 
 # if __name__ == '__main__':
 #     wpcli = WPCLI()
+#     wpcli.plugin_list(r'F:\laravel-herd\sites\wp01')
