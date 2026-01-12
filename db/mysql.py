@@ -168,7 +168,6 @@ class MySQL:
             '-e',
             f'USE `{db_name}`; SELECT ID FROM {prefix}users;'
         ]
-        print(command)
         result = self.run(command, print_output=False)
         if result:
             user_id = result.splitlines()[1]
@@ -197,7 +196,6 @@ class MySQL:
                 '-e',
                 f'USE `{db_name}`; UPDATE {prefix}users SET user_login = \'{new_username}\' WHERE ID = {user_id};'
             ]
-            print(command)
             self.run(command)
             print(f'Changed username to "{new_username}" in database "{db_name}".')
         except Exception as e:
