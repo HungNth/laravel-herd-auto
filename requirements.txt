@@ -1,6 +1,1 @@
-asyncio
 httpx
-sqlalchemy
-aiosqlite
-aiomysql
-requests
