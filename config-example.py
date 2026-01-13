@@ -130,6 +130,7 @@ wp_options = [
     'config set AUTOSAVE_INTERVAL 600',
     'config set WP_POST_REVISIONS 5',
     'config set EMPTY_TRASH_DAYS 21',
+    'config set DISABLE_WP_CRON true',
     'option update timezone_string "Asia/Ho_Chi_Minh"',
     'option update time_format "H:i"',
     'option update date_format "d/m/Y"',
