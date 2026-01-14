@@ -198,6 +198,10 @@ class WordPress:
     
     def configure_wp(self):
         options = [
+            'Create a new website',
+            'Delete website(s)',
+            'Backup website options',
+            'Restore website options'
             'Reset Admin information to default',
             'Setup WordPress options',
             'Both 1 and 2',
@@ -210,18 +214,26 @@ class WordPress:
         selected_website = self.select_websites()
         
         if choice == '1':
-            self.reset_admin_info(selected_website)
+            self.create_website()
         elif choice == '2':
-            self.setup_wp_options(selected_website)
+            self.delete_websites()
         elif choice == '3':
+            self.backup_options()
+        elif choice == '4':
+            self.restore_options()
+        elif choice == '5':
+            self.reset_admin_info(selected_website)
+        elif choice == '6':
+            self.setup_wp_options(selected_website)
+        elif choice == '7':
             self.reset_admin_info(selected_website)
             self.setup_wp_options(selected_website)
-        elif choice == '4':
+        elif choice == '8':
             for site in selected_website:
                 site_path = herd_sites_path / site
                 selected_themes = self.wp_api.select_packages("theme")
                 self.install_packages(site_path, selected_themes, item_type="theme")
-        elif choice == '5':
+        elif choice == '9':
             for site in selected_website:
                 site_path = herd_sites_path / site
                 selected_plugins = self.wp_api.select_packages("plugin")
