@@ -29,6 +29,14 @@ def herd_path():
         from config import win_herd_sites_path, win_herd_cached_path, win_herd_bin_path
         if not win_herd_sites_path or not win_herd_cached_path or not win_herd_bin_path:
             return sys.exit("Please configure the herd paths in 'config.py' for Windows.")
+        
+        if not Path(win_herd_sites_path).exists():
+            return sys.exit(f"The herd sites path does not exist: {win_herd_sites_path}")
+        if not Path(win_herd_cached_path).exists():
+            return sys.exit(f"The herd cached path does not exist: {win_herd_cached_path}")
+        if not Path(win_herd_bin_path).exists():
+            return sys.exit(f"The herd bin path does not exist: {win_herd_bin_path}")
+        
         herd_sites_path = Path(win_herd_sites_path).expanduser().resolve()
         herd_cached_path = Path(win_herd_cached_path).expanduser().resolve()
         herd_bin_path = Path(win_herd_bin_path).expanduser().resolve()
@@ -38,6 +46,13 @@ def herd_path():
         from config import mac_herd_sites_path, mac_herd_cached_path, mac_herd_bin_path
         if not mac_herd_sites_path or not mac_herd_cached_path or not mac_herd_bin_path:
             return sys.exit("Please configure the herd paths in 'config.py' for MacOs.")
+        
+        if not Path(mac_herd_sites_path).exists():
+            return sys.exit(f"The herd sites path does not exist: {mac_herd_sites_path}")
+        if not Path(mac_herd_cached_path).exists():
+            return sys.exit(f"The herd cached path does not exist: {mac_herd_cached_path}")
+        if not Path(mac_herd_bin_path).exists():
+            return sys.exit(f"The herd bin path does not exist: {mac_herd_bin_path}")
         herd_sites_path = Path(mac_herd_sites_path).expanduser().resolve()
         herd_cached_path = Path(mac_herd_cached_path).expanduser().resolve()
         herd_bin_path = Path(mac_herd_bin_path).expanduser().resolve()
@@ -45,6 +60,3 @@ def herd_path():
         return herd_sites_path, herd_cached_path, herd_bin_path
     else:
         return None
-
-# if __name__ == '__main__':
-#     herd_sites_path, herd_cached_path, herd_bin_path = herd_path()
