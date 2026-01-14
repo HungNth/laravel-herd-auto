@@ -28,6 +28,14 @@
       ```bash
       python main.py -d
       ```
+    - Backup WordPress site:
+      ```bash
+      python main.py -b
+      ```
+    - Restore WordPress site:
+      ```bash
+      python main.py -r
+      ```
     - For help:
       ```bash
       python main.py -h
@@ -41,7 +49,7 @@ To build the script into an executable file, you can use PyInstaller. First, act
 the following command:
 
 ```commandline
-pyinstaller --onefile --name hwpy main.py
+pyinstaller --onefile --icon=data/herd.ico --name hwpy main.py
 ```
 
 This will create a `dist` folder containing the executable file.
@@ -60,7 +68,7 @@ To add the executable to your system PATH:
     3. Click on 'Advanced system settings'.
     4. Click on the 'Environment Variables' button.
     5. In the 'System variables' section, find and select the 'Path' variable, then click 'Edit'.
-    6. Click 'New' and add the path to the directory containing your executable (e.g., `C:\path\to\dist`).
+    6. Click 'New' and add the path to the directory containing your executable (e.g., `D:\laravel-herd-auto\dist`).
     7. Click 'OK' to close all dialog boxes.
     8. Restart your terminal or command prompt to apply the changes.
 - On MacOS:
@@ -71,9 +79,9 @@ To add the executable to your system PATH:
        ```bash
        nano ~/.zshrc
        ```
-    3. Add the following line to the file, replacing `/path/to/dist` with the actual path to your executable:
+    3. Add the following line to the file, replacing `laravel-herd-auto/dist` with the actual path to your executable:
        ```bash
-       export PATH="/path/to/dist:$PATH"
+       export PATH="laravel-herd-auto/dist:$PATH"
        ```
     4. Save the file and exit the text editor.
     5. Apply the changes by running:
