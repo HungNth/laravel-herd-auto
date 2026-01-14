@@ -11,7 +11,7 @@
   ```
 - Install WP-CLI:
     - On Windows, run script: `install-wp-cli-Windows.bat`
-    - On MacOS, open terminal and run script with sudo: `sudo install-wp-cli-MacOS.sh` or use homebrew:
+    - On MacOS, open terminal and run script with sudo: `sudo bash install-wp-cli-MacOS.sh` or use homebrew:
       ```bash
       brew install wp-cli
       ```
@@ -63,6 +63,7 @@ This will create a `dist` folder containing the executable file.
 - On Windows, the executable will be located at `dist\hwpy.exe`.
 - On MacOS, the executable will be located at `dist/hwpy`.
 - Add the executable to your system PATH for easy access from any terminal window.
+- Now you can run the executable directly or add it to your system PATH.
 
 ### Add to PATH
 
@@ -78,20 +79,11 @@ To add the executable to your system PATH:
     7. Click 'OK' to close all dialog boxes.
     8. Restart your terminal or command prompt to apply the changes.
 - On MacOS:
-    1. Open a terminal window.
-    2. Open your shell profile file in a text editor. This could be `~/.bash_profile`, `~/.zshrc`, or another file
-       depending on your shell.
-       For example, you can use:
+    1. Open a terminal window in the directory where this repository is located.
+    2. Create symlink to `/opt/homebrew/bin` (or another directory already in your PATH, e.g., `/usr/local/bin`):
        ```bash
-       nano ~/.zshrc
+       chmod +x "$(pwd)/dist/hwpy"
+       ln -s "$(pwd)/dist/hwpy" /opt/homebrew/bin/hwpy
        ```
-    3. Add the following line to the file, replacing `laravel-herd-auto/dist` with the actual path to your executable:
-       ```bash
-       export PATH="laravel-herd-auto/dist:$PATH"
-       ```
-    4. Save the file and exit the text editor.
-    5. Apply the changes by running:
-       ```bash
-       source ~/.zshrc
-       ```
-    6. Restart your terminal to ensure the changes take effect.
+    3. Restart your terminal to apply the changes.
+    4. Verify by typing `hwpy` in your terminal or using `which hwpy` to see the path of the executable (`/opt/homebrew/bin/hwpy`).
