@@ -24,9 +24,17 @@ def is_mac():
     return check_os() == 'darwin'
 
 
+from utils.config_parse import parse_config
+
+config = parse_config()
+win_herd_sites_path = config.get("win_herd_sites_path")
+win_herd_cached_path = config.get("win_herd_cached_path")
+mac_herd_sites_path = config.get("mac_herd_sites_path")
+mac_herd_cached_path = config.get("mac_herd_cached_path")
+
+
 def herd_path():
     if is_windows():
-        from config import win_herd_sites_path, win_herd_cached_path
         if not win_herd_sites_path or not win_herd_cached_path:
             return sys.exit("Please configure the herd paths in 'config.py' for Windows.")
 
@@ -40,7 +48,6 @@ def herd_path():
 
         return herd_sites_path, herd_cached_path
     elif is_mac():
-        from config import mac_herd_sites_path, mac_herd_cached_path
         if not mac_herd_sites_path or not mac_herd_cached_path:
             return sys.exit("Please configure the herd paths in 'config.py' for MacOs.")
 
