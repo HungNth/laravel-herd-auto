@@ -1,4 +1,3 @@
-import json
 import shutil
 import sys
 import webbrowser
@@ -8,7 +7,7 @@ from typing import Literal
 import httpx
 from packaging.version import Version
 
-import config
+from utils.config_parse import parse_config
 from utils.commands import run_command
 from utils.data_file_handle import load_data_file, save_data_file
 from utils.get_filename import get_filename_from_response
@@ -18,6 +17,7 @@ from utils.time_helper import formatted_time
 from utils.user_input import get_input, clean_input, get_confirmation, get_input_options
 
 herd_sites_path, herd_cached_path = herd_path()
+config = parse_config()
 
 
 class WordPress:
@@ -29,9 +29,9 @@ class WordPress:
         Path(self.data_file).parent.mkdir(parents=True, exist_ok=True)
 
     def get_admin_credentials(self):
-        admin_username = config.admin_username
-        admin_password = config.admin_password
-        admin_email = config.admin_email
+        admin_username = config.get('admin_username', 'admin')
+        admin_password = config.get('admin_password', 'admin')
+        admin_email = config.get('admin_email', 'admin')
 
         site_name = get_input('Enter the site name: ', required=True)
         site_name = clean_input(site_name)
@@ -83,7 +83,7 @@ class WordPress:
         self.wp_cli.wp_install(site_name, admin_username, admin_password, admin_email)
 
         if len(selected_themes) == 0:
-            selected_themes = [config.default_theme_slug]
+            selected_themes = [config.get('default_theme_slug')]
             self.install_packages(site_path, selected_themes, item_type="theme")
 
         if len(selected_plugins) > 0:
@@ -96,7 +96,7 @@ class WordPress:
         webbrowser.open(f'https://{site_name}.test/wp-admin')
 
     def download_wp(self):
-        api = config.wp_version_api
+        api = config.get('wp_version_api', 'https://api.wordpress.org/core/version-check/1.7/')
 
         response = httpx.get(api, timeout=10)
         response.raise_for_status()
@@ -298,10 +298,10 @@ class WordPress:
         for site in selected_website:
             path = herd_sites_path / site
             print(f'Resetting admin information for site: "{site}"')
-            self.mysql.change_username(site, config.admin_username)
-            self.mysql.change_password(site, config.admin_password)
-            self.wp_cli.update_admin_email(path, config.admin_email)
-            self.mysql.change_email(site, config.admin_email)
+            self.mysql.change_username(site, config.get('admin_username'))
+            self.mysql.change_password(site, config.get('admin_password'))
+            self.wp_cli.update_admin_email(path, config.get('admin_email'))
+            self.mysql.change_email(site, config.get('admin_email'))
 
     def setup_wp_options(self, selected_website):
         for site in selected_website:
@@ -393,7 +393,7 @@ class WordPress:
                 backup_path
             ]
 
-            excludes_config = config.excludes
+            excludes_config = config.get('excludes')
             for exclude in excludes_config:
                 exclude_build = f'--exclude={exclude}'
                 command.append(exclude_build)
@@ -478,9 +478,9 @@ class WordPress:
     def restore_full_source(self, site_name=None, backup_file=None):
         site_name = site_name
         backup_file = backup_file
-        admin_username_input = config.admin_username
-        admin_pass_input = config.admin_password
-        admin_email_input = config.admin_email
+        admin_username_input = config.get('admin_username')
+        admin_pass_input = config.get('admin_password')
+        admin_email_input = config.get('admin_email')
 
         if site_name is None:
             site_name, admin_username_input, admin_pass_input, admin_email_input = self.get_admin_credentials()
@@ -565,9 +565,9 @@ class WordPress:
         site_name = site_name
         wp_content_path = wp_content_path
         sql_file = sql_file
-        admin_username_input = config.admin_username
-        admin_pass_input = config.admin_password
-        admin_email_input = config.admin_email
+        admin_username_input = config.get('admin_username')
+        admin_pass_input = config.get('admin_password')
+        admin_email_input = config.get('admin_email')
 
         if site_name is None:
             site_name, admin_username_input, admin_pass_input, admin_email_input = self.get_admin_credentials()
@@ -627,9 +627,9 @@ class WordPress:
     def restore_by_wpress(self, site_name=None, wpress_path=None):
         site_name = site_name
         wpress_path = wpress_path
-        admin_username_input = config.admin_username
-        admin_pass_input = config.admin_password
-        admin_email_input = config.admin_email
+        admin_username_input = config.get('admin_username')
+        admin_pass_input = config.get('admin_password')
+        admin_email_input = config.get('admin_email')
 
         if site_name is None:
             site_name, admin_username_input, admin_pass_input, admin_email_input = self.get_admin_credentials()
