@@ -1,17 +1,20 @@
 import json
+import sys
 from pathlib import Path
 
 
-def load_data_file(data_file):
-    if Path(data_file).exists():
+def load_data_file(file):
+    if Path(file).exists():
         try:
-            with open(data_file, 'r') as f:
+            with open(file, 'r') as f:
                 return json.load(f)
         except Exception:
             pass
-    return {}
+    else:
+        print(f"File does not exist: {file}")
+        sys.exit(0)
 
 
-def save_data_file(data_file, data: dict):
-    with open(data_file, 'w') as f:
+def save_data_file(file, data: dict):
+    with open(file, 'w') as f:
         json.dump(data, f, indent=2)
