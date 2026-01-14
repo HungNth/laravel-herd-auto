@@ -87,11 +87,6 @@ class WPCLI:
         path = herd_sites_path / site_name
         url = f"https://{site_name}.test"
         title = site_name
-        db_name = site_name
-        
-        self.wp_core_download(path)
-        self.wp_config_create(path, db_name)
-        self.wp_db_create(path)
         
         command = (
             f'"{self.wpcli}" core install '
