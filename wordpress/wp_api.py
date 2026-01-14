@@ -15,8 +15,19 @@ class WPApi:
         api_endpoint = f"{self.base_url}packages/{slug}/metadata/license/{self.api_key}"
         return api_endpoint
     
+    def get_latest_version(self, slug):
+        response = httpx.get(self.build_api(slug), timeout=10)
+        response.raise_for_status()
+        
+        if response.status_code == 200:
+            data = response.json()
+            latest_version = data.get('version')
+            return latest_version
+        return None
+    
     def get_download_url(self, slug):
-        response = httpx.get(self.build_api(slug))
+        response = httpx.get(self.build_api(slug), timeout=10)
+        response.raise_for_status()
         
         if response.status_code == 200:
             data = response.json()
