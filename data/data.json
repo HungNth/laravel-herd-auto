@@ -1,0 +1,26 @@
+{
+  "wordpress": {
+    "version": "6.9",
+    "file_name": "wordpress-6.9-no-content.zip"
+  },
+  "flatsome": {
+    "version": "3.20.4",
+    "file_name": "flatsome.zip"
+  },
+  "advanced-custom-fields-pro": {
+    "version": "6.7.0.2",
+    "file_name": "advanced-custom-fields-pro.zip"
+  },
+  "seo-by-rank-math-pro": {
+    "version": "3.0.104",
+    "file_name": "seo-by-rank-math-pro.zip"
+  },
+  "etch": {
+    "version": "1.0.0-beta-12",
+    "file_name": "etch.zip"
+  },
+  "perfmatters": {
+    "version": "2.5.5",
+    "file_name": "perfmatters.zip"
+  }
+}
