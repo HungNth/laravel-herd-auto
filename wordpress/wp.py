@@ -1,17 +1,23 @@
+import json
 import shutil
 import sys
 import webbrowser
 from pathlib import Path
 from typing import Literal
 
+import httpx
+from packaging.version import Version
+
 import config
 from utils.commands import run_command
+from utils.data_file_handle import load_data_file, save_data_file
+from utils.get_filename import get_filename_from_response
 from utils.herd import add_ssl
 from utils.os_helper import herd_path
 from utils.time_helper import formatted_time
 from utils.user_input import get_input, clean_input, get_confirmation, get_input_options
 
-herd_sites_path, _, _ = herd_path()
+herd_sites_path, herd_cached_path, _ = herd_path()
 
 
 class WordPress:
@@ -19,6 +25,8 @@ class WordPress:
         self.wp_cli = wpc_li
         self.wp_api = wp_api
         self.mysql = mysql
+        self.data_file = Path.cwd() / 'data/data.json'
+        Path(self.data_file).parent.mkdir(parents=True, exist_ok=True)
     
     def get_admin_credentials(self):
         admin_username = config.admin_username
@@ -56,8 +64,24 @@ class WordPress:
         selected_themes, selected_plugins, is_setup_wp_config = self.get_setup_options()
         
         site_path = herd_sites_path / site_name
+        Path(site_path).mkdir(parents=True, exist_ok=True)
         
+        file_name = self.download_wp()
+        print(f'Extracting WordPress to site path: "{site_path}"')
+        command = [
+            'tar',
+            '-xf',
+            herd_cached_path / file_name,
+            '-C',
+            site_path,
+            '--strip-components=1'
+        ]
+        run_command(command, cwd=herd_sites_path, shell=False)
+        
+        self.wp_cli.wp_config_create(site_path, site_name)
+        self.wp_cli.wp_db_create(site_path)
         self.wp_cli.wp_install(site_name, admin_username, admin_password, admin_email)
+        
         if len(selected_themes) == 0:
             selected_themes = [config.default_theme_slug]
             self.install_packages(site_path, selected_themes, item_type="theme")
@@ -69,6 +93,92 @@ class WordPress:
         
         add_ssl(site_path)
         webbrowser.open(f'https://{site_name}.test/wp-admin')
+    
+    def download_wp(self):
+        api = config.wp_version_api
+        
+        response = httpx.get(api, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+        
+        offer = data['offers'][0]
+        latest_version = offer['current']  # string
+        download_url = offer['packages']['no_content']
+        filename = download_url.split('/')[-1]
+        download_path = herd_cached_path / filename
+        
+        data_json = load_data_file(self.data_file)
+        saved_version = Version(data_json.get('wordpress', {}).get('version', '0'))
+        latest_version_v = Version(latest_version)
+        
+        need_download = (
+                saved_version is None or
+                saved_version < latest_version_v or
+                not download_path.exists()
+        )
+        
+        if need_download:
+            print(f'Downloading WordPress {latest_version}...')
+            
+            with httpx.stream('GET', download_url, timeout=30) as r:
+                r.raise_for_status()
+                with open(download_path, 'wb') as f:
+                    for chunk in r.iter_bytes():
+                        f.write(chunk)
+            
+            data_json['wordpress'] = {
+                "version": latest_version,
+                "file_name": filename
+            }
+            save_data_file(self.data_file, data_json)
+        else:
+            print(f'WordPress {latest_version} is already downloaded.')
+        
+        return filename
+    
+    def download_package(self, slug):
+        latest_version = self.wp_api.get_latest_version(slug)
+        download_url = self.wp_api.get_download_url(slug)
+        
+        filename = get_filename_from_response(download_url)
+        download_path = herd_cached_path / filename
+        
+        data_json = load_data_file(self.data_file)
+        saved_version = Version(data_json.get(slug, {}).get('version', '0'))
+        latest_version_v = Version(latest_version)
+        
+        need_download = (
+                saved_version is None or
+                saved_version < latest_version_v or
+                not download_path.exists()
+        )
+        
+        if need_download:
+            print(f'Downloading {slug} {latest_version}...')
+            
+            with httpx.stream('GET', download_url, timeout=30) as r:
+                r.raise_for_status()
+                with open(download_path, 'wb') as f:
+                    for chunk in r.iter_bytes():
+                        f.write(chunk)
+            
+            data_json[slug] = {
+                "version": latest_version,
+                "file_name": filename
+            }
+            save_data_file(self.data_file, data_json)
+        else:
+            print(f'{slug} {latest_version} is already downloaded.')
+        
+        return filename
+    
+    def download_packages(self, slugs):
+        file_names = []
+        for slug in slugs:
+            file_name = self.download_package(slug)
+            file_names.append(file_name)
+        
+        return file_names
     
     def delete_websites(self):
         selected_sites = self.select_websites()
@@ -93,7 +203,8 @@ class WordPress:
                 shutil.rmtree(site_path)
                 print(f'Website "{site_name}" and its database have been deleted successfully.\n')
             except Exception as e:
-                raise ValueError(f'Error deleting website "{site_name}": {e}')
+                print(f'Error deleting website "{site_name}": {e}\n')
+                pass
     
     def get_setup_options(self):
         selected_themes = ""
@@ -174,12 +285,13 @@ class WordPress:
         if selected_pkg_slugs is None:
             return
         
-        selected_pkg_urls = self.wp_api.get_download_urls(selected_pkg_slugs)
+        file_names = self.download_packages(selected_pkg_slugs)
+        file_paths = [herd_cached_path / file_name for file_name in file_names]
         
         if item_type == "theme":
-            self.wp_cli.install_themes(selected_pkg_urls, path)
+            self.wp_cli.install_themes(file_paths, path)
         elif item_type == "plugin":
-            self.wp_cli.install_plugins(selected_pkg_urls, path)
+            self.wp_cli.install_plugins(file_paths, path)
     
     def reset_admin_info(self, selected_website):
         for site in selected_website:
