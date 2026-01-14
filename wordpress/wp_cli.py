@@ -2,21 +2,22 @@ import subprocess
 import sys
 from pathlib import Path
 
-import config
 from utils.commands import run_command
 from utils.os_helper import is_windows, herd_path, is_mac
+from utils.config_parse import parse_config
 
+config = parse_config()
 herd_sites_path, herd_cached_path = herd_path()
 
 
 class WPCLI:
     def __init__(self):
-        self.db_user = config.db_username
-        self.db_password = config.db_password
-        self.db_host = config.db_host if is_windows() else '127.0.0.1'
-        self.db_port = config.db_port
+        self.db_user = config.get('db_username')
+        self.db_password = config.get('db_password')
+        self.db_host = config.get('db_host') if is_windows() else '127.0.0.1'
+        self.db_port = config.get('db_port')
         self.wpcli = self.wpcli_path()
-        self.wp_options = config.wp_options
+        self.wp_options = config.get('wp_options')
 
     def wpcli_path(self):
         wpcli = "wp"
