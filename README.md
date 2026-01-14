@@ -41,13 +41,13 @@ To build the script into an executable file, you can use PyInstaller. First, act
 the following command:
 
 ```commandline
-pyinstaller main.py
+pyinstaller --onefile --name hwpy main.py
 ```
 
 This will create a `dist` folder containing the executable file.
 
-- On Windows, the executable will be located at `dist\main\main.exe`.
-- On MacOS, the executable will be located at `dist/main/main`.
+- On Windows, the executable will be located at `dist\hwpy.exe`.
+- On MacOS, the executable will be located at `dist/hwpy`.
 - Add the executable to your system PATH for easy access from any terminal window.
 
 ### Add to PATH
@@ -60,7 +60,7 @@ To add the executable to your system PATH:
     3. Click on 'Advanced system settings'.
     4. Click on the 'Environment Variables' button.
     5. In the 'System variables' section, find and select the 'Path' variable, then click 'Edit'.
-    6. Click 'New' and add the path to the directory containing your executable (e.g., `C:\path\to\dist\main`).
+    6. Click 'New' and add the path to the directory containing your executable (e.g., `C:\path\to\dist`).
     7. Click 'OK' to close all dialog boxes.
     8. Restart your terminal or command prompt to apply the changes.
 - On MacOS:
@@ -71,9 +71,9 @@ To add the executable to your system PATH:
        ```bash
        nano ~/.zshrc
        ```
-    3. Add the following line to the file, replacing `/path/to/dist/main` with the actual path to your executable:
+    3. Add the following line to the file, replacing `/path/to/dist` with the actual path to your executable:
        ```bash
-       export PATH="/path/to/dist/main:$PATH"
+       export PATH="/path/to/dist:$PATH"
        ```
     4. Save the file and exit the text editor.
     5. Apply the changes by running:
