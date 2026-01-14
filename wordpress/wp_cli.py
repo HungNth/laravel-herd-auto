@@ -1,4 +1,5 @@
 import subprocess
+import sys
 from pathlib import Path
 
 import config
@@ -16,22 +17,27 @@ class WPCLI:
         self.db_port = config.db_port
         self.wpcli = self.wpcli_path()
         self.wp_options = config.wp_options
-    
+
     def wpcli_path(self):
-        wpcli = ""
-        
-        if is_windows():
-            wpcli = herd_bin_path / "wp.bat"
-        elif is_mac():
-            wpcli = herd_bin_path / "wp"
-        
-        if not wpcli.exists():
-            print("WP-CLI is not installed or not found in the expected path.")
-            print("Installing WP-CLI...")
-            self.install_wp_cli()
-        
-        return Path(herd_bin_path / 'wp').expanduser().resolve()
-    
+        wpcli = "wp"
+
+        try:
+            result = run_command(f'{wpcli} --version', cwd=None, print_output=False)
+            if 'WP-CLI' not in result:
+                print("WP-CLI is not installed or not found in the system PATH.")
+                script_name = "install-wp-cli-"
+                if is_windows():
+                    script_name += "Windows.bat"
+                elif is_mac():
+                    script_name += "MacOS.sh"
+
+                sys.exit(
+                    f'Pleas running script "{script_name}"{" or run on terminal: `brew install wp-cli`" if is_mac() else ""} to install WP-CLI.')
+        except RuntimeError:
+            sys.exit("WP-CLI is not installed or not found in the system PATH.")
+
+        return wpcli
+
     def install_wp_cli(self):
         if is_windows():
             command = (
@@ -49,24 +55,25 @@ class WPCLI:
             )
             run_command(command, cwd=herd_bin_path)
             print("WP-CLI installed successfully on MacOs.")
-    
+
     def get_wp_version(self, path):
-        command = f'"{self.wpcli}" core version'
+        command = f'{self.wpcli} core version'
         result = run_command(command, cwd=path)
         return result
-    
+
     def wp_core_download(self, path, skip_content=True):
-        command = f'"{self.wpcli}" core download --path="{path}"'
+        command = f'{self.wpcli} core download --path="{path}"'
         if skip_content:
             command += ' --skip-content'
         result = run_command(command, cwd=herd_sites_path)
         return result
-    
+
     def wp_config_create(self, path, db_name, db_prefix='wp_'):
         db_name = db_name.replace("-", "_").replace(" ", "_").lower()
-        
+
+        print('Creating wp-config.php...')
         command = (
-            f'"{self.wpcli}" config create '
+            f'{self.wpcli} config create '
             f'--dbname="{db_name}" '
             f'--dbuser="{self.db_user}" '
             f'--dbpass="{self.db_password}" '
@@ -75,21 +82,23 @@ class WPCLI:
         )
         result = run_command(command, cwd=path)
         return result
-    
+
     def wp_db_create(self, path):
+        print('Creating database...')
         command = (
-            f'"{self.wpcli}" db create'
+            f'{self.wpcli} db create'
         )
         result = run_command(command, cwd=path)
         return result
-    
+
     def wp_install(self, site_name, admin_username, admin_password, admin_email):
         path = herd_sites_path / site_name
         url = f"https://{site_name}.test"
         title = site_name
-        
+
+        print('Installing WordPress...')
         command = (
-            f'"{self.wpcli}" core install '
+            f'{self.wpcli} core install '
             f'--url="{url}" '
             f'--title="{title}" '
             f'--admin_user="{admin_username}" '
@@ -98,26 +107,26 @@ class WPCLI:
         )
         result = run_command(command, cwd=path)
         return result
-    
+
     def wp_config_set(self, path, key, value):
         command = (
-            f'"{self.wpcli}" config set '
+            f'{self.wpcli} config set '
             f'"{key}" "{value}"'
         )
         result = run_command(command, cwd=path)
         return result
-    
+
     def wp_options_set(self, path):
         for option in self.wp_options:
             command = (
-                f'"{self.wpcli}" {option}'
+                f'{self.wpcli} {option}'
             )
             run_command(command, cwd=path)
-        
+
         if is_windows():
-            cmd = f'"{self.wpcli}" rewrite structure "/%category%/%postname%/"'
+            cmd = f'{self.wpcli} rewrite structure "/%category%/%postname%/"'
             subprocess.run(cmd, cwd=path, shell=True)
-        
+
         elif is_mac():
             cmd = [
                 'wp',
@@ -126,193 +135,193 @@ class WPCLI:
                 '/%category%/%postname%/'
             ]
             subprocess.run(cmd, cwd=path)
-    
+
     def get_user_id(self, path):
         command = (
-            f'"{self.wpcli}" user list --field=ID'
+            f'{self.wpcli} user list --field=ID'
         )
         result = run_command(command, cwd=path, print_output=False)
         return result[0]
-    
+
     def get_db_name(self, path):
         command = (
-            f'"{self.wpcli}" config get DB_NAME'
+            f'{self.wpcli} config get DB_NAME'
         )
         result = run_command(command, cwd=path, print_output=False)
         return result
-    
+
     def get_db_prefix(self, path):
         command = (
-            f'"{self.wpcli}" db prefix'
+            f'{self.wpcli} db prefix'
         )
         result = run_command(command, cwd=path, print_output=False)
         return result
-    
+
     def export_db(self, path):
         command = (
-            f'"{self.wpcli}" db export'
+            f'{self.wpcli} db export'
         )
         run_command(command, cwd=path)
-    
+
     def import_db(self, path, db_path):
         if not Path(db_path).is_file() and Path(db_path).suffix.lower() != '.sql' and not Path(db_path).exists():
             raise FileNotFoundError(f"The specified database file does not exist or is not a .sql file: {db_path}")
-        
+
         command = (
-            f'"{self.wpcli}" db import '
+            f'{self.wpcli} db import '
             f'"{db_path}"'
         )
         run_command(command, cwd=path)
-    
+
     def update_user_email(self, path, new_email):
         user_id = self.get_user_id(path)
-        
+
         command = (
-            f'"{self.wpcli}" user update {user_id} '
+            f'{self.wpcli} user update {user_id} '
             f'--user_email="{new_email}"'
         )
         run_command(command, cwd=path)
-    
+
     def update_admin_email(self, path, new_email):
         command = (
-            f'"{self.wpcli}" option update admin_email {new_email}'
+            f'{self.wpcli} option update admin_email {new_email}'
         )
         run_command(command, cwd=path)
-    
+
     def update_site_url(self, path):
         site_url = f'https://{Path(path).name}.test'
-        
+
         command1 = (
-            f'"{self.wpcli}" option update siteurl "{site_url}"'
+            f'{self.wpcli} option update siteurl "{site_url}"'
         )
         run_command(command1, cwd=path)
-        
+
         command2 = (
-            f'"{self.wpcli}" option update home "{site_url}"'
+            f'{self.wpcli} option update home "{site_url}"'
         )
         run_command(command2, cwd=path)
-    
+
     def update_user_password(self, path, new_password):
         user_id = self.get_user_id(path)
-        
+
         command = (
-            f'"{self.wpcli}" user update {user_id} '
+            f'{self.wpcli} user update {user_id} '
             f'--user_pass="{new_password}"'
         )
         run_command(command, cwd=path)
-    
+
     def delete_all_transients(self, path):
         command = (
-            f'"{self.wpcli}" transient delete --all'
+            f'{self.wpcli} transient delete --all'
         )
         run_command(command, cwd=path, print_output=False)
-    
+
     def cache_clear(self, path):
         command1 = (
-            f'"{self.wpcli}" cache flush'
+            f'{self.wpcli} cache flush'
         )
         run_command(command1, cwd=path, print_output=False)
-        
+
         command2 = (
-            f'"{self.wpcli}" cli cache clear'
+            f'{self.wpcli} cli cache clear'
         )
         run_command(command2, cwd=path, print_output=False)
-    
+
     def install_plugin(self, slug, path, activate=False, force=False):
         command = (
-            f'"{self.wpcli}" plugin install "{slug}"'
+            f'{self.wpcli} plugin install "{slug}"'
         )
         if force:
             command += ' --force'
         if activate:
             command += ' --activate'
-        
+
         run_command(command, cwd=path)
-    
+
     def install_plugins(self, plugins, path, activate=False, force=False):
         for plugin in plugins:
             self.install_plugin(plugin, path, activate=activate, force=force)
-    
+
     def activate_plugin(self, slug, path):
         command = (
-            f'"{self.wpcli}" plugin activate "{slug}"'
+            f'{self.wpcli} plugin activate "{slug}"'
         )
         run_command(command, cwd=path)
-    
+
     def is_plugin_installed(self, slug, path):
         command = (
-            f'"{self.wpcli}" plugin is-installed "{slug}"'
+            f'{self.wpcli} plugin is-installed "{slug}"'
         )
         try:
             run_command(command, cwd=path)
             return True
         except RuntimeError:
             return False
-    
+
     def plugin_list(self, path, field=None, status=None):
         command = (
-            f'"{self.wpcli}" plugin list'
+            f'{self.wpcli} plugin list'
         )
         if field is not None:
             command += f' --field={field}'
         if status is not None:
             command += f' --status={status}'
-        
+
         result = run_command(command, cwd=path, print_output=False)
         return result
-    
+
     def activate_all_plugins(self, path, exclude=None):
         command = (
-            f'"{self.wpcli}" plugin activate --all'
+            f'{self.wpcli} plugin activate --all'
         )
         if exclude is not None and isinstance(exclude, list):
             exclude_args = f'--exclude={",".join(exclude)}'
             command += f' {exclude_args}'
         run_command(command, cwd=path)
-    
+
     def deactivate_all_plugins(self, path, exclude=None):
         command = (
-            f'"{self.wpcli}" plugin deactivate --all'
+            f'{self.wpcli} plugin deactivate --all'
         )
         if exclude is None:
             exclude = []
         exclude_args = f'--exclude={",".join(exclude)}'
-        
+
         if exclude is not None:
             command += f' {exclude_args}'
-        
+
         run_command(command, cwd=path)
-    
+
     def install_theme(self, slug, path, activate=True, force=False):
         command = (
-            f'"{self.wpcli}" theme install "{slug}"'
+            f'{self.wpcli} theme install "{slug}"'
         )
         if force:
             command += ' --force'
         if activate:
             command += ' --activate'
-        
+
         run_command(command, cwd=path)
-    
+
     def install_themes(self, themes, path, force=False):
         for theme in themes:
             self.install_theme(theme, path, force=force)
-    
+
     def ai1_backup(self, path):
         command = (
-            f'"{self.wpcli}" ai1wm backup'
+            f'{self.wpcli} ai1wm backup'
         )
         result = run_command(command, cwd=path)
         return result
-    
+
     def ai1_restore(self, path, wpress_file, auto_confirm=True):
         command = (
-            f'"{self.wpcli}" ai1wm restore "{wpress_file}"'
+            f'{self.wpcli} ai1wm restore "{wpress_file}"'
         )
-        
+
         if auto_confirm:
             command += ' --yes'
-        
+
         result = run_command(command, cwd=path)
         return result
 
