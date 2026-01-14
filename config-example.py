@@ -21,24 +21,28 @@ default_theme_slug = 'flatsome'
 
 themes = [
     {
-        'name': 'Flatsome',
-        'slug': 'flatsome',
+        "name": "Flatsome",
+        "slug": "flatsome",
     },
     {
-        'name': 'Jannah',
-        'slug': 'jannah',
+        "name": "Jannah",
+        "slug": "jannah",
     },
     {
-        'name': 'Avada',
-        'slug': 'Avada',
+        "name": "Avada",
+        "slug": "Avada",
     },
     {
-        'name': 'Woodmart',
-        'slug': 'flatsome',
+        "name": "Woodmart",
+        "slug": "flatsome",
     },
     {
-        'name': 'Bricks',
-        'slug': 'bricks',
+        "name": "Bricks",
+        "slug": "bricks",
+    },
+    {
+        "name": "Etch Theme",
+        "slug": "etch-theme",
     }
 ]
 
