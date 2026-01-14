@@ -9,7 +9,12 @@
     ```
     pip install -r requirements.txt
   ```
-- Run the script in your terminal:
+- Install WP-CLI:
+    - On Windows, run script: `install-wp-cli-Windows.bat`
+    - On MacOS, open terminal and run script with sudo: `sudo install-wp-cli-MacOS.sh` or use homebrew:
+      ```bash
+      brew install wp-cli
+      ```
 - Activate your Python environment (if using one):
     - On Windows:
   ```bash
@@ -19,6 +24,7 @@
   ```bash
   source .venv/bin/activate
   ```
+- Run the script in your terminal:
     - Add WordPress site:
       ```bash
       python main.py -a
