@@ -17,7 +17,7 @@ from utils.os_helper import herd_path
 from utils.time_helper import formatted_time
 from utils.user_input import get_input, clean_input, get_confirmation, get_input_options
 
-herd_sites_path, herd_cached_path, _ = herd_path()
+herd_sites_path, herd_cached_path = herd_path()
 
 
 class WordPress:

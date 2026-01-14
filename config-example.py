@@ -1,11 +1,9 @@
 # Laravel Herd Configuration File
 win_herd_sites_path = r'F:\laravel-herd\sites'
 win_herd_cached_path = r'F:\laravel-herd\cached'
-win_herd_bin_path = r'C:\Users\HungOMS\.config\herd\bin'
 
 mac_herd_sites_path = r''
 mac_herd_cached_path = r''
-mac_herd_bin_path = r'/usr/local/bin'
 
 admin_username = 'admin'
 admin_password = 'admin'
