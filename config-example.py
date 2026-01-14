@@ -150,7 +150,8 @@ wp_options = [
     'option update posts_per_page 30',
     'option update posts_per_rss 210',
     'option update rss_use_excerpt 1',
-    'option update avatar_default identicon'
+    'option update avatar_default identicon',
+    'rewrite structure "/%category%/%postname%/"'
 ]
 
 excludes = [
