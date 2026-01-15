@@ -4,9 +4,8 @@ from pathlib import Path
 
 from utils.commands import run_command
 from utils.os_helper import is_windows, herd_path, is_mac
-from utils.config_parse import parse_config
+from utils.config_parse import config
 
-config = parse_config()
 herd_sites_path, herd_cached_path = herd_path()
 
 
