@@ -24,9 +24,8 @@ def is_mac():
     return check_os() == 'darwin'
 
 
-from utils.config_parse import parse_config
+from utils.config_parse import config
 
-config = parse_config()
 win_herd_sites_path = config.get("win_herd_sites_path")
 win_herd_cached_path = config.get("win_herd_cached_path")
 mac_herd_sites_path = config.get("mac_herd_sites_path")
