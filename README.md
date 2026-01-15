@@ -53,24 +53,20 @@
 To build the script into an executable file, you can use PyInstaller. First, activate your Python environment, then run
 the following command in your terminal from the project root directory:
 
-- **Note**: Ensure copy `config.jon` to the `dist` folder after building. If you copy executable to another location,
-  copy `config.json` as well.
+- Run command:
+    ```commandline
+    pyinstaller --onefile --icon=data/herd.ico --name hwpy main.py
+    ```
 - Folder structure after build:
   ```
   laravel-herd-auto/
   ├── dist/
   │   ├── hwpy.exe (Windows) or hwpy (MacOS)
-  │   └── config.json
   ├── main.py
-  ├── config.json (copy to dist/)
   ├── data/
   │   └── herd.ico
   └── ...
   ```
-- Run command:
-    ```commandline
-    pyinstaller --onefile --icon=data/herd.ico --name hwpy main.py
-    ```
 
 This will create a `dist` folder containing the executable file.
 
