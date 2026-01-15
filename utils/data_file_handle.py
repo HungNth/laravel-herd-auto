@@ -1,5 +1,4 @@
 import json
-import sys
 from pathlib import Path
 
 
@@ -11,8 +10,7 @@ def load_data_file(file):
         except Exception:
             pass
     else:
-        print(f"File does not exist: {file}")
-        sys.exit(0)
+        raise FileNotFoundError(f'Config file not found: {file}')
 
 
 def save_data_file(file, data: dict):
