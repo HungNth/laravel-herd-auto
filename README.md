@@ -12,10 +12,9 @@
 - Install WP-CLI:
     - On Windows, run script: `install-wp-cli-Windows.bat`
     - On MacOS, open terminal and run script with sudo: `sudo install-wp-cli-MacOS.sh` or use homebrew:
-      ```bash
-      brew install wp-cli
-      ```
-- Activate your Python environment (if using one):
+      `brew install wp-cli`
+
+- Activate your Python environment (if using one, recommended for development):
     - On Windows:
   ```bash
   .venv\Scripts\activate.bat
@@ -52,17 +51,33 @@
 ### Building the Executable
 
 To build the script into an executable file, you can use PyInstaller. First, activate your Python environment, then run
-the following command:
+the following command in your terminal from the project root directory:
 
-```commandline
-pyinstaller --onefile --icon=data/herd.ico --name hwpy main.py
-```
+- **Note**: Ensure copy `config.jon` to the `dist` folder after building. If you copy executable to another location,
+  copy `config.json` as well.
+- Folder structure after build:
+  ```
+  laravel-herd-auto/
+  ├── dist/
+  │   ├── hwpy.exe (Windows) or hwpy (MacOS)
+  │   └── config.json
+  ├── main.py
+  ├── config.json (copy to dist/)
+  ├── data/
+  │   └── herd.ico
+  └── ...
+  ```
+- Run command:
+    ```commandline
+    pyinstaller --onefile --icon=data/herd.ico --name hwpy main.py
+    ```
 
 This will create a `dist` folder containing the executable file.
 
 - On Windows, the executable will be located at `dist\hwpy.exe`.
 - On MacOS, the executable will be located at `dist/hwpy`.
-- Add the executable to your system PATH for easy access from any terminal window.
+
+Now you can run the executable directly from the `dist` folder. Or you can add it to your system PATH for easier access.
 
 ### Add to PATH
 
