@@ -1,9 +1,7 @@
 from typing import Literal
 import httpx
 
-from utils.config_parse import parse_config
-
-config = parse_config()
+from utils.config_parse import config
 
 
 class WPApi:
