@@ -7,7 +7,7 @@ from typing import Literal
 import httpx
 from packaging.version import Version
 
-from utils.config_parse import parse_config
+from utils.config_parse import config
 from utils.commands import run_command
 from utils.data_file_handle import load_data_file, save_data_file
 from utils.get_filename import get_filename_from_response
@@ -17,7 +17,6 @@ from utils.time_helper import formatted_time
 from utils.user_input import get_input, clean_input, get_confirmation, get_input_options
 
 herd_sites_path, herd_cached_path = herd_path()
-config = parse_config()
 
 
 class WordPress:
