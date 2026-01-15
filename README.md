@@ -3,7 +3,7 @@
 ## How to Use
 
 - Clone this repository or download the script.
-- Configure the script in `config.py` with your WordPress site details.
+- Copy and rename from `config.example.json` to `config.json` and update the configuration values as needed.
 - Ensure you have Python installed on your machine.
 - Install any required dependencies (if applicable), should use **python environment**.
     ```
@@ -81,7 +81,8 @@ Now you can run the executable directly from the `dist` folder. Or you can add i
 
 ### Add to PATH
 
-To add the executable to your system PATH:
+Add the directory containing the executable to your system PATH environment variable, use symbolic links, or move the
+executable to a directory already in your PATH.
 
 - On Windows:
     1. Right-click on 'This PC' or 'Computer' on the desktop or in File Explorer.
@@ -94,19 +95,14 @@ To add the executable to your system PATH:
     8. Restart your terminal or command prompt to apply the changes.
 - On MacOS:
     1. Open a terminal window.
-    2. Open your shell profile file in a text editor. This could be `~/.bash_profile`, `~/.zshrc`, or another file
-       depending on your shell.
-       For example, you can use:
+    2. Create symbolic link to `/opt/homebrew/bin` or `/user/local/bin` or any directory in your PATH:
        ```bash
-       nano ~/.zshrc
+       ln -s "$(pwd)/dist/hwpy" /opt/homebrew/bin/hwpy
+       ls -l /opt/homebrew/bin/hwpy # to verify the link
        ```
-    3. Add the following line to the file, replacing `laravel-herd-auto/dist` with the actual path to your executable:
-       ```bash
-       export PATH="laravel-herd-auto/dist:$PATH"
-       ```
-    4. Save the file and exit the text editor.
-    5. Apply the changes by running:
-       ```bash
-       source ~/.zshrc
-       ```
-    6. Restart your terminal to ensure the changes take effect.
+    3. Restart your terminal to apply the changes.
+    4. To check if it was added successfully, run:
+         ```bash
+         hwpy -h
+         ```
+       You should see the help message for the script.
