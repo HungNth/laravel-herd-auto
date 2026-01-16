@@ -12,3 +12,4 @@ build
 *.spec
 test.py
 config.json
+data/data.json
