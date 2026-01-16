@@ -63,7 +63,7 @@ plugins = [
     },
     {
         'name': 'WP Mail SMTP Pro',
-        'slug': 'wp-all-import-pro'
+        'slug': 'wp-mail-smtp-pro'
     },
     {
         'name': 'Admin and Site Enhancements (ASE) Pro',
