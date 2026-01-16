@@ -314,7 +314,7 @@ class WordPress:
             'Create a new website',
             'Delete website(s)',
             'Backup website options',
-            'Restore website options'
+            'Restore website options',
             'Reset Admin information to default',
             'Setup WordPress options',
             'Both 1 and 2',
