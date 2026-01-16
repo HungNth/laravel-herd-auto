@@ -30,5 +30,9 @@
   "duplicator-pro": {
     "version": "4.5.24.3",
     "file_name": "duplicator-pro.zip"
+  },
+  "wp-all-import-pro": {
+    "version": "5.0.3",
+    "file_name": "wp-all-import-pro.zip"
   }
 }
