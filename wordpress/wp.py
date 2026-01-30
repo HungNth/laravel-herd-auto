@@ -324,8 +324,6 @@ class WordPress:
         print("Select an option to configure WordPress:")
         choice = get_input_options(options)
 
-        selected_website = self.select_websites()
-
         if choice == '1':
             self.create_website()
         elif choice == '2':
@@ -335,18 +333,23 @@ class WordPress:
         elif choice == '4':
             self.restore_options()
         elif choice == '5':
+            selected_website = self.select_websites()
             self.reset_admin_info(selected_website)
         elif choice == '6':
+            selected_website = self.select_websites()
             self.setup_wp_options(selected_website)
         elif choice == '7':
+            selected_website = self.select_websites()
             self.reset_admin_info(selected_website)
             self.setup_wp_options(selected_website)
         elif choice == '8':
+            selected_website = self.select_websites()
             for site in selected_website:
                 site_path = herd_sites_path / site
                 selected_themes = self.wp_api.select_packages("theme")
                 self.install_packages(site_path, selected_themes, item_type="theme")
         elif choice == '9':
+            selected_website = self.select_websites()
             for site in selected_website:
                 site_path = herd_sites_path / site
                 selected_plugins = self.wp_api.select_packages("plugin")
