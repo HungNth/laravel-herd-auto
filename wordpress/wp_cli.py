@@ -120,28 +120,28 @@ class WPCLI:
 
     def get_user_id(self, path):
         command = (
-            f'{self.wpcli} user list --field=ID'
+            f'{self.wpcli} user list --field=ID --path="{path}"'
         )
         result = run_command(command, cwd=path, print_output=False)
         return result[0]
 
     def get_db_name(self, path):
         command = (
-            f'{self.wpcli} config get DB_NAME'
+            f'{self.wpcli} config get DB_NAME --path="{path}"'
         )
         result = run_command(command, cwd=path, print_output=False)
         return result
 
     def get_db_prefix(self, path):
         command = (
-            f'{self.wpcli} db prefix'
+            f'{self.wpcli} db prefix --path="{path}"'
         )
         result = run_command(command, cwd=path, print_output=False)
         return result
 
     def export_db(self, path):
         command = (
-            f'{self.wpcli} db export'
+            f'{self.wpcli} db export --path="{path}"'
         )
         run_command(command, cwd=path)
 
@@ -152,6 +152,7 @@ class WPCLI:
         command = (
             f'{self.wpcli} db import '
             f'"{db_path}"'
+            f'--path="{path}"'
         )
         run_command(command, cwd=path)
 
@@ -161,12 +162,13 @@ class WPCLI:
         command = (
             f'{self.wpcli} user update {user_id} '
             f'--user_email="{new_email}"'
+            f'--path="{path}"'
         )
         run_command(command, cwd=path)
 
     def update_admin_email(self, path, new_email):
         command = (
-            f'{self.wpcli} option update admin_email {new_email}'
+            f'{self.wpcli} option update admin_email {new_email} --path="{path}"'
         )
         run_command(command, cwd=path)
 
@@ -174,12 +176,12 @@ class WPCLI:
         site_url = f'https://{Path(path).name}.test'
 
         command1 = (
-            f'{self.wpcli} option update siteurl "{site_url}"'
+            f'{self.wpcli} option update siteurl "{site_url}" --path="{path}"'
         )
         run_command(command1, cwd=path)
 
         command2 = (
-            f'{self.wpcli} option update home "{site_url}"'
+            f'{self.wpcli} option update home "{site_url}" --path="{path}"'
         )
         run_command(command2, cwd=path)
 
@@ -189,29 +191,30 @@ class WPCLI:
         command = (
             f'{self.wpcli} user update {user_id} '
             f'--user_pass="{new_password}"'
+            f'--path="{path}"'
         )
         run_command(command, cwd=path)
 
     def delete_all_transients(self, path):
         command = (
-            f'{self.wpcli} transient delete --all'
+            f'{self.wpcli} transient delete --all --path="{path}"'
         )
         run_command(command, cwd=path, print_output=False)
 
     def cache_clear(self, path):
         command1 = (
-            f'{self.wpcli} cache flush'
+            f'{self.wpcli} cache flush --path="{path}"'
         )
         run_command(command1, cwd=path, print_output=False)
 
         command2 = (
-            f'{self.wpcli} cli cache clear'
+            f'{self.wpcli} cli cache clear --path="{path}"'
         )
         run_command(command2, cwd=path, print_output=False)
 
     def install_plugin(self, slug, path, activate=False, force=False):
         command = (
-            f'{self.wpcli} plugin install "{slug}"'
+            f'{self.wpcli} plugin install "{slug}" --path="{path}"'
         )
         if force:
             command += ' --force'
@@ -221,12 +224,13 @@ class WPCLI:
         run_command(command, cwd=path)
 
     def install_plugins(self, plugins, path, activate=False, force=False):
+        print('Installing plugin...')
         for plugin in plugins:
             self.install_plugin(plugin, path, activate=activate, force=force)
 
     def activate_plugin(self, slug, path):
         command = (
-            f'{self.wpcli} plugin activate "{slug}"'
+            f'{self.wpcli} plugin activate "{slug}" --path="{path}"'
         )
         run_command(command, cwd=path)
 
@@ -254,7 +258,7 @@ class WPCLI:
 
     def activate_all_plugins(self, path, exclude=None):
         command = (
-            f'{self.wpcli} plugin activate --all'
+            f'{self.wpcli} plugin activate --all --path="{path}"'
         )
         if exclude is not None and isinstance(exclude, list):
             exclude_args = f'--exclude={",".join(exclude)}'
@@ -263,7 +267,7 @@ class WPCLI:
 
     def deactivate_all_plugins(self, path, exclude=None):
         command = (
-            f'{self.wpcli} plugin deactivate --all'
+            f'{self.wpcli} plugin deactivate --all --path="{path}"'
         )
         if exclude is None:
             exclude = []
@@ -276,7 +280,7 @@ class WPCLI:
 
     def install_theme(self, slug, path, activate=True, force=False):
         command = (
-            f'{self.wpcli} theme install "{slug}"'
+            f'{self.wpcli} theme install "{slug}" --path="{path}"'
         )
         if force:
             command += ' --force'
@@ -286,19 +290,20 @@ class WPCLI:
         run_command(command, cwd=path)
 
     def install_themes(self, themes, path, force=False):
+        print('Installing theme...')
         for theme in themes:
             self.install_theme(theme, path, force=force)
 
     def ai1_backup(self, path):
         command = (
-            f'{self.wpcli} ai1wm backup'
+            f'{self.wpcli} ai1wm backup --path="{path}"'
         )
         result = run_command(command, cwd=path)
         return result
 
     def ai1_restore(self, path, wpress_file, auto_confirm=True):
         command = (
-            f'{self.wpcli} ai1wm restore "{wpress_file}"'
+            f'{self.wpcli} ai1wm restore "{wpress_file}" --path="{path}"'
         )
 
         if auto_confirm:
