@@ -1,5 +1,5 @@
 # Laravel Herd Configuration File
-win_herd_sites_path = r'F:\laravel-herd\sites'
+win_herd_sites_path = r'F:\laravel-herd\wordpress'
 win_herd_cached_path = r'F:\laravel-herd\cached'
 
 mac_herd_sites_path = r''
@@ -63,7 +63,7 @@ plugins = [
     },
     {
         'name': 'WP Mail SMTP Pro',
-        'slug': 'wp-all-import-pro'
+        'slug': 'wp-mail-smtp-pro'
     },
     {
         'name': 'Admin and Site Enhancements (ASE) Pro',
